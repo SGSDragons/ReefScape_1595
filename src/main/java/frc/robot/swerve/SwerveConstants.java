@@ -85,7 +85,9 @@ public final class SwerveConstants {
      */
     //public static final double maxAngularVelocity = 8.0; //TODO: This must be tuned to specific robot
 
-    public static double maxSpeed = Preferences.getDouble(Constants.Keys.maxSpeedKey, 4.17);
+    public static double maxSpeed() {
+        return Preferences.getDouble(Constants.Keys.maxSpeedKey, 4.17);
+    }
     public static double maxAngularVelocity = Preferences.getDouble(Constants.Keys.maxAngularVelocityKey, 29.65);
 
     /* Neutral Modes */
@@ -118,7 +120,7 @@ public final class SwerveConstants {
             // TODO: Make a tool that simplifies getting these measurements so they can
             // be fixed during a match. Perhaps pull these from preferences, too. Then
             // they can be updated directly from the SmartDashboard UI without rebuilding code
-            Rotation2d angleOffset
+            double canOffset
     ) {}
 
     /* Front Left Module - Module 0 */
@@ -126,7 +128,7 @@ public final class SwerveConstants {
         3,
         4,
         5,
-        Rotation2d.fromDegrees(-101.601563)
+        -0.232666
     );
 
     /* Front Right Module - Module 1 */
@@ -134,7 +136,7 @@ public final class SwerveConstants {
         6,
         7,
         8,
-        Rotation2d.fromDegrees(-58.095703)
+        0.166504 - 0.5
     );
 
     /* Back Left Module - Module 2 */
@@ -142,7 +144,7 @@ public final class SwerveConstants {
         9,
         10,
         11,
-        Rotation2d.fromDegrees(48.603516)
+        0.372314
     );
 
     /* Back Right Module - Module 3 */
@@ -150,6 +152,6 @@ public final class SwerveConstants {
         12,
         13,
         14,
-        Rotation2d.fromDegrees(-153.632813)
+        0.422363 - 0.5
     );
 }

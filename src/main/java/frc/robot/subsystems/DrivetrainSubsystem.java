@@ -37,7 +37,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public DrivetrainSubsystem() {
     //Initializes Gyroscope (Measures Yaw/Rotation Angle), swerve modules, and swerve odometry.
-    navx = new AHRS(AHRS.NavXComType.kMXP_SPI, (byte) 200);
+    navx = new AHRS(AHRS.NavXComType.kMXP_SPI);
     navx.reset();
 
     swerveModules = List.of(
@@ -49,6 +49,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     
     swerveDriveOdometry = new SwerveDriveOdometry(SwerveConstants.swerveKinematics, getGyroYaw(), getModulePositions());
     createSystemIdentificationRoutine();
+  }
+
+  public void reset() {
+    drive(new Translation2d(0.0, 0.0), 0.0, true, true);
   }
 
   public void drive(Translation2d translation, double anglularVelocity, boolean fieldRelative, boolean isOpenLoop) {
@@ -65,7 +69,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 translation.getY(),
                 anglularVelocity)
               );
-      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
+      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed());
 
       for (SwerveModule module : swerveModules) {
         module.setDesiredState(swerveModuleStates[module.moduleNumber], isOpenLoop);
@@ -75,7 +79,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void drive (ChassisSpeeds chassisSpeeds) {
     SwerveModuleState[] swerveModuleStates =
       SwerveConstants.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
+    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed());
 
     for (SwerveModule module : swerveModules) {
       module.setDesiredState(swerveModuleStates[module.moduleNumber], false);
@@ -84,7 +88,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   // Used by SwerveControllerCommand in Auto
   public void setModuleStates(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed);
+    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed());
 
     for (SwerveModule module : swerveModules) {
       module.setDesiredState(desiredStates[module.moduleNumber], false);
@@ -143,16 +147,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return Rotation2d.fromDegrees(-navx.getAngle()); //Negated because NavX CW Positive while ChassisSpeeds requires CCW Positive
   }
 
-  public void resetModulesToAbsolute() {
-    for(SwerveModule module : swerveModules) {
-      module.resetToAbsolute();
-    }
-  }
-
   private void telemetry() {
     for(SwerveModule module : swerveModules){
-            SmartDashboard.putNumber("Module " + module.moduleNumber + " CANcoder", module.getCANcoder().getDegrees());
-            SmartDashboard.putNumber("Module " + module.moduleNumber + " Angle", module.getPosition().angle.getDegrees());
+            SmartDashboard.putNumber("Module " + module.moduleNumber + " Angle", module.getAngle().getDegrees());
             SmartDashboard.putNumber("Module " + module.moduleNumber + " Velocity", module.getState().speedMetersPerSecond);
             if (module.getState().speedMetersPerSecond > highestMeasuredVelocity) {
               highestMeasuredVelocity = module.getState().speedMetersPerSecond;
@@ -196,5 +193,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
+  }
+
+  public void recalibrateCANCoders() {
+    for (SwerveModule module : swerveModules) {
+      module.recalibrateCANCoder();
+    }
   }
 }

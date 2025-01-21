@@ -21,7 +21,7 @@ public final class Constants {
 
     public static final int driverControllerPort = 0;
     public static final int operatorControllerPort = 1;
-    public static final double stickDeadband = 0.1;
+    public static final double stickDeadband() { return Preferences.getDouble("Deadband", 0.1); }
 
     // Austin controller button names --> values
     public static final int backLeftSingleSwitch = 1;
