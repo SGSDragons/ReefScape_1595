@@ -128,7 +128,7 @@ public final class SwerveConstants {
         3,
         4,
         5,
-        -0.019043
+        -0.19751 + 0.5
     );
 
     /* Front Right Module - Module 1 */
@@ -136,7 +136,7 @@ public final class SwerveConstants {
         6,
         7,
         8,
-        0.166504 - 0.5
+        0.166504
     );
 
     /* Back Left Module - Module 2 */
@@ -144,7 +144,7 @@ public final class SwerveConstants {
         9,
         10,
         11,
-        0.372314
+        0.372314 - 0.5
     );
 
     /* Back Right Module - Module 3 */
@@ -152,6 +152,6 @@ public final class SwerveConstants {
         12,
         13,
         14,
-        0.422363 - 0.5
+        0.422363
     );
 }

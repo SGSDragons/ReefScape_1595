@@ -51,7 +51,7 @@ public class TeleopDrive extends Command {
     drivetrainSubsystem.drive(
       new Translation2d(translationValue, strafeValue).times(SwerveConstants.maxSpeed()),
       rotationValue * SwerveConstants.maxAngularVelocity,
-      false, //!robotCentric.getAsBoolean(),
+      true, //!robotCentric.getAsBoolean(),
       isOpenLoop);
   }
 
