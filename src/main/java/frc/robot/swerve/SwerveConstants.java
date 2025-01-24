@@ -128,7 +128,7 @@ public final class SwerveConstants {
         3,
         4,
         5,
-        -0.232666
+        -0.019043
     );
 
     /* Front Right Module - Module 1 */
