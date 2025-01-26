@@ -4,13 +4,18 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.OperatorConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.SwerveSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,14 +25,31 @@ import frc.robot.subsystems.DrivetrainSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final DrivetrainSubsystem drivetrain;
-  private final Joystick driverController = new Joystick(OperatorConstants.driverControllerPort);
+  //private final DrivetrainSubsystem drivetrain;
+  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(4.8), new Pose2d());
+  private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
 
-    drivetrain = new DrivetrainSubsystem();
-    drivetrain.setDefaultCommand(new TeleopDrive(drivetrain, driverController));
+    //drivetrain = new DrivetrainSubsystem();
+    //drivetrain.setDefaultCommand(new TeleopDrive(drivetrain, driverController));
+
+    swerve.setDefaultCommand(swerve.driveCommand(
+            () -> driverController.getRawAxis(XboxController.Axis.kLeftX.value),
+            () -> driverController.getRawAxis(XboxController.Axis.kLeftY.value),
+            () -> driverController.getRawAxis(XboxController.Axis.kRightX.value),
+            () -> driverController.getRawAxis(XboxController.Axis.kRightY.value)
+    ));
+
+    driverController.rightTrigger().whileTrue(
+            swerve.driveTargeting(
+                    () -> driverController.getRawAxis(XboxController.Axis.kLeftX.value),
+                    () -> driverController.getRawAxis(XboxController.Axis.kLeftY.value),
+                    // TODO: Hardcode the Reef centerpoint for red and blue and choose accordingly
+                    new Translation2d(5.0, 5.0)
+            )
+    );
 
     // Configure the trigger bindings
     configureBindings();

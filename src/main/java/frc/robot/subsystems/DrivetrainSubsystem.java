@@ -38,6 +38,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     navx = new AHRS(AHRS.NavXComType.kMXP_SPI);
     navx.reset();
 
+
     swerveModules = List.of(
       new SwerveModule(0, SwerveConstants.mod0),
       new SwerveModule(1, SwerveConstants.mod1),
@@ -204,7 +205,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     LimelightHelpers.SetRobotOrientation("limelight", -navx.getAngle(), 0.0, 0.0, 0.0, 0.0, 0.0);
     LimelightHelpers.PoseEstimate estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-    poseEstimator.addVisionMeasurement(estimate.pose, estimate.timestampSeconds);
+    if (estimate != null) {
+      poseEstimator.addVisionMeasurement(estimate.pose, estimate.timestampSeconds);
+    }
     telemetry();
   }
 
