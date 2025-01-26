@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 
 import com.studica.frc.AHRS;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.LimelightHelpers;
 import frc.robot.swerve.SwerveConstants;
 import frc.robot.swerve.SwerveModule;
 
@@ -23,20 +25,16 @@ import java.util.List;
 public class DrivetrainSubsystem extends SubsystemBase {
   public SwerveDriveOdometry swerveDriveOdometry;
   public List<SwerveModule> swerveModules;
-  public AHRS navx;
+  public SwerveDrivePoseEstimator poseEstimator;
+
+  // The Gyroscope (Measures Yaw/Rotation Angle)
+  private final AHRS navx;
   private double highestMeasuredVelocity = 0;
 
-  // System Identification
-  // See https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/introduction.html
-  // In brief, the System Identification routine applies voltages to the drive
-  // wheels and measures their reactions. The goal is to estimate the ideal
-  // coefficients (kS, kV and kA) for the DC Motor Feed Forward equation to
-  // make the system respond best to control system inputs. Once analyzed, the
-  // results should be saved to SwerveConstants.driveKS, driveKV and driveKA
   private SysIdRoutine sysIdRoutine;
 
   public DrivetrainSubsystem() {
-    //Initializes Gyroscope (Measures Yaw/Rotation Angle), swerve modules, and swerve odometry.
+
     navx = new AHRS(AHRS.NavXComType.kMXP_SPI);
     navx.reset();
 
@@ -48,7 +46,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
     );
     
     swerveDriveOdometry = new SwerveDriveOdometry(SwerveConstants.swerveKinematics, getGyroYaw(), getModulePositions());
-    createSystemIdentificationRoutine();
+
+    poseEstimator = new SwerveDrivePoseEstimator(
+            SwerveConstants.swerveKinematics,
+            navx.getRotation2d(),
+            getModulePositions(),
+            new Pose2d()
+    );
   }
 
   public void reset() {
@@ -76,16 +80,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
       }
   }
 
-  public void drive (ChassisSpeeds chassisSpeeds) {
-    SwerveModuleState[] swerveModuleStates =
-      SwerveConstants.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed());
-
-    for (SwerveModule module : swerveModules) {
-      module.setDesiredState(swerveModuleStates[module.moduleNumber], false);
-    }
-  }
-
+//  public void drive (ChassisSpeeds chassisSpeeds) {
+//    SwerveModuleState[] swerveModuleStates =
+//      SwerveConstants.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
+//    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed());
+//
+//    for (SwerveModule module : swerveModules) {
+//      module.setDesiredState(swerveModuleStates[module.moduleNumber], false);
+//    }
+//  }
+//
   // Used by SwerveControllerCommand in Auto
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed());
@@ -163,7 +167,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
   // Makes System Identification Routine for Mathematical Analysis. Runs two
   // tests that apply specific voltages to motors and logs their positions and
   // velocities.
-  private void createSystemIdentificationRoutine() {
+  public SysIdRoutine createSystemIdentificationRoutine() {
+    // System Identification
+    // See https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/introduction.html
+    // In brief, the System Identification routine applies voltages to the drive
+    // wheels and measures their reactions. The goal is to estimate the ideal
+    // coefficients (kS, kV and kA) for the DC Motor Feed Forward equation to
+    // make the system respond best to control system inputs. Once analyzed, the
+    // results should be saved to SwerveConstants.driveKS, driveKV and driveKA
+
     SysIdRoutine.Config config = new SysIdRoutine.Config(
         Units.Volts.per(Units.Second).of(0.75),
         Units.Volts.of(0.75),
@@ -174,20 +186,25 @@ public class DrivetrainSubsystem extends SubsystemBase {
         log -> swerveModules.forEach(m -> m.logStatus(log)),
         this);
 
-    sysIdRoutine = new SysIdRoutine(config, mechanism);
+    return new SysIdRoutine(config, mechanism);
   }
 
   // Drive System Identification Commands for Testing and Analysis
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.quasistatic(direction);
+    return createSystemIdentificationRoutine().quasistatic(direction);
   }
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return sysIdRoutine.dynamic(direction);
+    return createSystemIdentificationRoutine().dynamic(direction);
   }
 
   @Override
   public void periodic() {
     swerveDriveOdometry.update(getGyroYaw(), getModulePositions());
+    poseEstimator.update(getGyroYaw(), getModulePositions());
+
+    LimelightHelpers.SetRobotOrientation("limelight", -navx.getAngle(), 0.0, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.PoseEstimate estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    poseEstimator.addVisionMeasurement(estimate.pose, estimate.timestampSeconds);
     telemetry();
   }
 
