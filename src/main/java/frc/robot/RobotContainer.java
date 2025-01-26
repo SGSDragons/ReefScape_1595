@@ -5,13 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.Recalibrate;
 import frc.robot.commands.TeleopDrive;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
@@ -23,13 +20,15 @@ import frc.robot.subsystems.DrivetrainSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  public final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
-  public final Joystick driverController = new Joystick(OperatorConstants.driverControllerPort);
-
-  public final TeleopDrive teleop = new TeleopDrive(drivetrain, driverController);
+  private final DrivetrainSubsystem drivetrain;
+  private final Joystick driverController = new Joystick(OperatorConstants.driverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+
+    drivetrain = new DrivetrainSubsystem();
+    drivetrain.setDefaultCommand(new TeleopDrive(drivetrain, driverController));
+
     // Configure the trigger bindings
     configureBindings();
   }
@@ -52,12 +51,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
     return null;
   }
 
-  private final Command test = new Recalibrate(drivetrain);
   public Command getTestCommand() {
-    return test;
+    return null;
   }
 }

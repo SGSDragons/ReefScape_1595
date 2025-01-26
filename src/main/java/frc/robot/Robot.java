@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.TeleopDrive;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -76,9 +75,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-
-    container.drivetrain.setDefaultCommand(container.teleop);
   }
 
   /** This function is called periodically during operator control. */
@@ -87,8 +83,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopExit() {
-    container.drivetrain.removeDefaultCommand();
-    container.drivetrain.reset();
     super.teleopExit();
   }
 
@@ -97,15 +91,11 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
-
-    CommandScheduler.getInstance().schedule(container.getTestCommand());
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    container.getTestCommand().schedule();
-
   }
 
   /** This function is called once when the robot is first started up. */
