@@ -26,7 +26,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //private final DrivetrainSubsystem drivetrain;
-  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(4.8), new Pose2d());
+  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(0.5), new Pose2d());
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -35,11 +35,10 @@ public class RobotContainer {
     //drivetrain = new DrivetrainSubsystem();
     //drivetrain.setDefaultCommand(new TeleopDrive(drivetrain, driverController));
 
-    swerve.setDefaultCommand(swerve.driveCommand(
+    swerve.setDefaultCommand(swerve.driveRelative(
             () -> driverController.getRawAxis(XboxController.Axis.kLeftX.value),
             () -> driverController.getRawAxis(XboxController.Axis.kLeftY.value),
-            () -> driverController.getRawAxis(XboxController.Axis.kRightX.value),
-            () -> driverController.getRawAxis(XboxController.Axis.kRightY.value)
+            () -> driverController.getRawAxis(XboxController.Axis.kRightX.value)
     ));
 
     driverController.rightTrigger().whileTrue(

@@ -13,6 +13,8 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.controllers.PathFollowingController;
 import com.pathplanner.lib.util.DriveFeedforwards;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -237,8 +239,12 @@ public class SwerveSubsystem extends SubsystemBase {
         // swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
 
-            Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
-                    translationY.getAsDouble()), 0.8);
+            Translation2d joystick = new Translation2d(translationY.getAsDouble(), translationX.getAsDouble());
+            if (joystick.getNorm() < 0.2) {
+                joystick = Translation2d.kZero;
+            }
+
+            Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
 
             // Make the robot move
             driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(
@@ -249,6 +255,25 @@ public class SwerveSubsystem extends SubsystemBase {
                     swerveDrive.getOdometryHeading().getRadians(),
                     swerveDrive.getMaximumChassisVelocity()));
         });
+    }
+
+    public Command driveRelative(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX)
+    {
+      return run(() -> {
+        
+        Translation2d joystick = new Translation2d(translationY.getAsDouble(), translationX.getAsDouble());
+        if (joystick.getNorm() < 0.2) {
+            joystick = Translation2d.kZero;
+        }
+
+        Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
+
+        // Make the robot move
+        swerveDrive.drive(joystick,
+                          Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity(),
+                          false,
+                          false);
+      });
     }
 
     /**
