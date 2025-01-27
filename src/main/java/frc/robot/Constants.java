@@ -4,7 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 
 /**
@@ -131,4 +136,30 @@ public final class Constants {
       public static final String minimumNoteProximityKey = "Note Detection Proximity";
 
      }
+
+
+    public class Reefscape {
+      public static boolean isRedAlliance() {
+        var alliance = DriverStation.getAlliance();
+        return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
+      }
+
+      public static final Translation2d redReef = new Translation2d(13, 4);
+      public static final Translation2d blueReef = new Translation2d(4.5, 4);
+      public static Translation2d getReefLocation() {
+        return isRedAlliance() ? redReef : blueReef; 
+      }
+
+      public static Pose2d getStart() {
+        switch(DriverStation.getRawAllianceStation()) {
+          case Blue1: return new Pose2d(7.5, 6, Rotation2d.k180deg);
+          case Blue2: return new Pose2d(7.5, 4, Rotation2d.k180deg);
+          case Blue3: return new Pose2d(7.5, 2, Rotation2d.k180deg);
+
+          case Red1: return new Pose2d(10, 6, Rotation2d.kZero);
+          case Red2: return new Pose2d(10, 4, Rotation2d.kZero);
+          default: return new Pose2d(10, 2, Rotation2d.kZero);
+        }
+    }
+  }
 }

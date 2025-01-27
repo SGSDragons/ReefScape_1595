@@ -29,6 +29,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import frc.robot.Constants;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -138,7 +140,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
                     // This will flip the path being followed to the red side of the field.
                     // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    this::isRedAlliance,
+                    Constants.Reefscape::isRedAlliance,
 
                     // Reference to this subsystem to set requirements
                     this
@@ -197,34 +199,6 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     /**
-     * Command to drive the robot using translative values and heading pointed to a fixed target
-     *
-     * @param translationX Translation in the X direction. Cubed for smoother controls.
-     * @param translationY Translation in the Y direction. Cubed for smoother controls.
-     * @param target       A targets position on the field. The robots heading will change to follow this target.
-     * @return Drive command.
-     */
-    public Command driveTargeting(DoubleSupplier translationX, DoubleSupplier translationY, Translation2d target) {
-        swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
-        return run(() -> {
-
-            Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
-                    translationY.getAsDouble()), 0.8);
-
-            Translation2d heading = target.minus(getPose().getTranslation());
-
-            // Make the robot move
-            driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(
-                    scaledInputs.getX(),
-                    scaledInputs.getY(),
-                    heading.getX(),
-                    heading.getY(),
-                    swerveDrive.getOdometryHeading().getRadians(),
-                    swerveDrive.getMaximumChassisVelocity()));
-        });
-    }
-
-    /**
      * Command to drive the robot using translative values and heading as a setpoint.
      * Using this method, the robot will move in the direction of one joystick's tilt, and
      * point in the direction of the other joystick's tilt.
@@ -239,7 +213,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
 
-            Translation2d joystick = new Translation2d(translationY.getAsDouble(), translationX.getAsDouble());
+            Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
             if (joystick.getNorm() < 0.2) {
                 joystick = Translation2d.kZero;
             }
@@ -274,6 +248,35 @@ public class SwerveSubsystem extends SubsystemBase {
                           false,
                           false);
       });
+    }
+
+    /**
+     * Command to drive the robot using translative values and heading pointed to a fixed target
+     *
+     * @param translationX Translation in the X direction. Cubed for smoother controls.
+     * @param translationY Translation in the Y direction. Cubed for smoother controls.
+     * @param target       A targets position on the field. The robots heading will change to follow this target.
+     * @return Drive command.
+     */
+    public Command  driveTargeting(DoubleSupplier translationX, DoubleSupplier translationY) {
+        swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
+        return run(() -> {
+
+            Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
+                    translationY.getAsDouble()), 0.8);
+
+            Translation2d reef = Constants.Reefscape.getReefLocation();
+            Translation2d direction = reef.minus(getPose().getTranslation());
+
+            // Make the robot move
+            driveFieldOriented(swerveDrive.swerveController.getTargetSpeeds(
+                    scaledInputs.getX(),
+                    scaledInputs.getY(),
+                    direction.getY(),
+                    direction.getX(),
+                    swerveDrive.getOdometryHeading().getRadians(),
+                    swerveDrive.getMaximumChassisVelocity()));
+        });
     }
 
     /**
@@ -380,23 +383,13 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     /**
-     * Checks if the alliance is red, defaults to false if alliance isn't available.
-     *
-     * @return true if the red alliance, false if blue. Defaults to false if none is available.
-     */
-    private boolean isRedAlliance() {
-        var alliance = DriverStation.getAlliance();
-        return alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red;
-    }
-
-    /**
      * This will zero (calibrate) the robot to assume the current position is facing forward
      * <p>
      * If red alliance rotate the robot 180 after the drivebase zero command
      */
     public void zeroGyroWithAlliance() {
         zeroGyro();
-        if (isRedAlliance()) {
+        if (Constants.Reefscape.isRedAlliance()) {
             //Set the pose 180 degrees
             resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
         }
