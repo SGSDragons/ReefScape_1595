@@ -135,8 +135,7 @@ public final class Constants {
       public static final String correctNotePositionTimeKey = "Note Correction Outtake Seconds";
       public static final String minimumNoteProximityKey = "Note Detection Proximity";
 
-     }
-
+    }
 
     public class Reefscape {
       public static boolean isRedAlliance() {

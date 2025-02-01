@@ -4,8 +4,10 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import frc.robot.Constants.OperatorConstants;
@@ -13,6 +15,7 @@ import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.ApproachReef;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -58,11 +61,15 @@ public class RobotContainer {
     }
     public double translateX() { return inverter*readAxis(Axis.kLeftY); }
     public double translateY() { return inverter*readAxis(Axis.kLeftX); }
-    public double lookX() { return inverter*readAxis(Axis.kRightX); }
-    public double lookY() { return inverter*readAxis(Axis.kRightY); }
+    public double lookX() { return inverter*driverController.getRawAxis(2); }//readAxis(Axis.kRightX); }
+    public double lookY() { return inverter*driverController.getRawAxis(3); }//readAxis(Axis.kRightY); }
   }
   
   private void configureBindings() {
+
+    while (DriverStation.getAlliance().isEmpty()) {
+      DriverStation.refreshData();
+    }
     DriverSticks driver = new DriverSticks(); 
 
     swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
@@ -71,6 +78,8 @@ public class RobotContainer {
       swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX))
     );
     driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
+
+    driverController.a().whileTrue(new ApproachReef(swerve));
   }
 
   /**
@@ -79,7 +88,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    return new PathPlannerAuto("RedStation1");
   }
 
   public Command getTestCommand() {

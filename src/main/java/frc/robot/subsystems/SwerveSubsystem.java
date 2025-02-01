@@ -346,6 +346,11 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public void resetOdometry(Pose2d initialHolonomicPose) {
         swerveDrive.resetOdometry(initialHolonomicPose);
+        resetController();
+    }
+
+    public void resetController() {
+        swerveDrive.swerveController.lastAngleScalar = swerveDrive.getPose().getRotation().getRadians();
     }
 
     /**
