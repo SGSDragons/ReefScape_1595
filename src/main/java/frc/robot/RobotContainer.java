@@ -4,18 +4,22 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.ApproachReef;
+import frc.robot.commands.DynamicReefApproach;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -29,10 +33,16 @@ public class RobotContainer {
   //private final DrivetrainSubsystem drivetrain;
   private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
+  private final ApproachFactory approaches;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    while (DriverStation.getAlliance().isEmpty()) {
+      DriverStation.refreshData();
+    }
+
     swerve.resetOdometry(Reefscape.getStart());
+    approaches = new ApproachFactory(Reefscape.getReefLocation());
 
     // Configure the trigger bindings
     configureBindings();
@@ -67,10 +77,7 @@ public class RobotContainer {
   
   private void configureBindings() {
 
-    while (DriverStation.getAlliance().isEmpty()) {
-      DriverStation.refreshData();
-    }
-    DriverSticks driver = new DriverSticks(); 
+    DriverSticks driver = new DriverSticks();
 
     swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
 
@@ -79,7 +86,7 @@ public class RobotContainer {
     );
     driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
 
-    driverController.a().whileTrue(new ApproachReef(swerve));
+    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
   }
 
   /**
@@ -88,7 +95,12 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new PathPlannerAuto("RedStation1");
+    ApproachFactory.Approach topLeft = approaches.forAngleDegrees(120);
+
+    return new SequentialCommandGroup(
+            AutoBuilder.followPath(topLeft.generatePath(swerve.getPose().getTranslation(), Translation2d.kZero)),
+            AutoBuilder.pathfindToPose(new Pose2d(new Translation2d(13, 0), Rotation2d.kCW_90deg), approaches.constraints)
+    );
   }
 
   public Command getTestCommand() {

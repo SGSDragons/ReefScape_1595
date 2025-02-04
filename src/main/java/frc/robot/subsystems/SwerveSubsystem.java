@@ -140,7 +140,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
                     // This will flip the path being followed to the red side of the field.
                     // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    Constants.Reefscape::isRedAlliance,
+                    () -> false,
 
                     // Reference to this subsystem to set requirements
                     this
@@ -262,9 +262,13 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
 
-            Translation2d scaledInputs = SwerveMath.scaleTranslation(new Translation2d(translationX.getAsDouble(),
-                    translationY.getAsDouble()), 0.8);
+            Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
 
+            if (joystick.getNorm() < 0.1) {
+                joystick = Translation2d.kZero;
+            }
+
+            Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
             Translation2d reef = Constants.Reefscape.getReefLocation();
             Translation2d direction = reef.minus(getPose().getTranslation());
 
