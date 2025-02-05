@@ -43,10 +43,10 @@ public class ApproachFactory {
     }
 
     private Approach forAngle(double angle) {
-        while (angle < approaches.getFirst().beginAngle) {
+        while (angle < approaches.get(0).beginAngle) {
             angle += 2*Math.PI;
         }
-        while (angle >= approaches.getLast().endAngle) {
+        while (angle >= approaches.get(approaches.size()-1).endAngle) {
             angle -= 2*Math.PI;
         }
 
@@ -56,7 +56,7 @@ public class ApproachFactory {
             }
         }
         // Unreachable
-        return approaches.getFirst();
+        return approaches.get(0);
     }
 
     // Find the best approach to use based on the robot's current state and its target reef.

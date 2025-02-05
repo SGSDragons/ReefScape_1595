@@ -31,9 +31,8 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //private final DrivetrainSubsystem drivetrain;
-  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
+  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(2), Pose2d.kZero);
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
-  private final ApproachFactory approaches;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -41,8 +40,7 @@ public class RobotContainer {
       DriverStation.refreshData();
     }
 
-    swerve.resetOdometry(Reefscape.getStart());
-    approaches = new ApproachFactory(Reefscape.getReefLocation());
+    // swerve.resetOdometry(Reefscape.getStart());
 
     // Configure the trigger bindings
     configureBindings();
@@ -63,7 +61,7 @@ public class RobotContainer {
   //    Left joystick Up (-1 y-axis) maps to positive X.
   //    Left joystick left (-1 x-axis) maps to positive Y.
   // Thus, Blue axis are inverted.
-
+  
   class DriverSticks {
     private final double inverter = Reefscape.isRedAlliance() ? 1.0 : -1.0;
     double readAxis(XboxController.Axis axis) {
@@ -85,8 +83,6 @@ public class RobotContainer {
       swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX))
     );
     driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
-
-    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
   }
 
   /**
@@ -95,12 +91,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    ApproachFactory.Approach topLeft = approaches.forAngleDegrees(120);
-
-    return new SequentialCommandGroup(
-            AutoBuilder.followPath(topLeft.generatePath(swerve.getPose().getTranslation(), Translation2d.kZero)),
-            AutoBuilder.pathfindToPose(new Pose2d(new Translation2d(13, 0), Rotation2d.kCW_90deg), approaches.constraints)
-    );
+    return null;
   }
 
   public Command getTestCommand() {
