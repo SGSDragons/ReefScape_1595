@@ -71,8 +71,8 @@ public class RobotContainer {
     }
     public double translateX() { return inverter*readAxis(Axis.kLeftY); }
     public double translateY() { return inverter*readAxis(Axis.kLeftX); }
-    public double lookX() { return inverter*driverController.getRawAxis(2); }//readAxis(Axis.kRightX); }
-    public double lookY() { return inverter*driverController.getRawAxis(3); }//readAxis(Axis.kRightY); }
+    public double lookX() { return inverter*readAxis(Axis.kRightX); }
+    public double lookY() { return inverter*readAxis(Axis.kRightY); }
   }
   
   private void configureBindings() {
