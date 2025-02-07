@@ -1,31 +1,32 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.ApproachFactory;
+import frc.robot.ApproachFactory.Approach;
 import frc.robot.Constants;
 import org.junit.jupiter.api.Test;
-import frc.robot.commands.DynamicReefApproach.Approach;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApproachReefTest {
 
-    DynamicReefApproach factory = new DynamicReefApproach(null, Translation2d.kZero);
-    DynamicReefApproach redFactory = new DynamicReefApproach(null, Constants.Reefscape.redReef);
+    ApproachFactory factory = new ApproachFactory(Translation2d.kZero);
+    ApproachFactory redFactory = new ApproachFactory(Constants.Reefscape.redReef);
 
     @Test
     void getApproachAngleIdle() {
-        assertEquals(factory.approaches.get(0), getApproach(-10, -1, 0, 0));
+        assertEquals(factory.forAngleDegrees(-180), getApproach(-10, -1, 0, 0));
 
-        assertEquals(factory.approaches.get(1), getApproach(-1, -10, 0, 0));
-        assertEquals(factory.approaches.get(2), getApproach(1, -10, 0, 0));
+        assertEquals(factory.forAngleDegrees(-120), getApproach(-1, -10, 0, 0));
+        assertEquals(factory.forAngleDegrees(-60), getApproach(1, -10, 0, 0));
 
-        assertEquals(factory.approaches.get(3), getApproach(10, -1, 0, 0));
-        assertEquals(factory.approaches.get(3), getApproach(10, 1, 0, 0));
+        assertEquals(factory.forAngleDegrees(0), getApproach(10, -1, 0, 0));
+        assertEquals(factory.forAngleDegrees(0), getApproach(10, 1, 0, 0));
 
-        assertEquals(factory.approaches.get(4), getApproach(1, 10, 0, 0));
-        assertEquals(factory.approaches.get(5), getApproach(-1, 10, 0, 0));
+        assertEquals(factory.forAngleDegrees(60), getApproach(1, 10, 0, 0));
+        assertEquals(factory.forAngleDegrees(120), getApproach(-1, 10, 0, 0));
 
-        assertEquals(factory.approaches.get(0), getApproach(-10, 1, 0, 0));
+        assertEquals(factory.forAngleDegrees(180), getApproach(-10, 1, 0, 0));
     }
 
 
@@ -39,7 +40,7 @@ class ApproachReefTest {
     @Test
     void generatePath() {
 
-        Approach lowerLeft = redFactory.approaches.get(1);
+        Approach lowerLeft = redFactory.forAngleDegrees(-120);
         Translation2d location = new Translation2d(12.7, 1.3);
         Translation2d velocity = new Translation2d(0, 0);
 
