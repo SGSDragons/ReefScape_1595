@@ -15,6 +15,7 @@ import com.pathplanner.lib.controllers.PathFollowingController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,6 +31,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.PoseEstimate;
 
 import java.io.File;
 import java.util.Arrays;
@@ -93,7 +96,14 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         swerveDrive.updateOdometry();
-        // TODO: Bring in limelight pose estimates
+        PoseEstimate poseEst = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        if (poseEst != null && poseEst.tagCount > 0) {
+            swerveDrive.swerveDrivePoseEstimator.addVisionMeasurement(
+                poseEst.pose,
+                poseEst.timestampSeconds,
+                VecBuilder.fill(0.7, 0.7, 1e10)
+                );
+        }
     }
 
     @Override
@@ -210,8 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return Drive command.
      */
     public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX, DoubleSupplier headingY) {
-        // swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
-        
+        swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
 
             Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
@@ -355,7 +364,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void resetController() {
-        swerveDrive.swerveController.lastAngleScalar = swerveDrive.getPose().getRotation().getRadians();
+        // swerveDrive.swerveController.lastAngleScalar = swerveDrive.getPose().getRotation().getRadians();
     }
 
     /**

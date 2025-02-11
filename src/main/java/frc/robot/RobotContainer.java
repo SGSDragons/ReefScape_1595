@@ -96,12 +96,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    ApproachFactory.Approach topLeft = approaches.forAngleDegrees(120);
-
-    return new SequentialCommandGroup(
-            AutoBuilder.followPath(topLeft.generatePath(swerve.getPose().getTranslation(), Translation2d.kZero)),
-            AutoBuilder.pathfindToPose(new Pose2d(new Translation2d(13, 0), Rotation2d.kCW_90deg), approaches.constraints)
-    );
+    Command auto = AutoBuilder.buildAuto("RedAuto1_2Coral");
+    return auto;
   }
 
   public Command getTestCommand() {
