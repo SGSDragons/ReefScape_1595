@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.PIDController;
 // import edu.wpi.first.wpilibj.Joystick;
 // import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // import frc.robot.Constants.HardwareID;
 // import frc.lib.utilities.LimelightHelpers;
@@ -14,11 +15,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // import frc.robot.Constants.Keys;
 import frc.robot.Constants.LiftConstants;
 
+import java.util.function.DoubleSupplier;
+
 // import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 // import com.ctre.phoenix6.controls.VelocityVoltage;
 // import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 // import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -38,7 +42,7 @@ public class LiftSubsystem extends SubsystemBase{
         leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
 
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
-        leftLiftMotor.setNeutralMode(NeutralModeValue.Brake);
+        leftLiftMotor.setNeutralMode(NeutralModeValue.Coast);
         
         //leftLiftMotor.setInverted(true);
         //rightLiftMotor.setInverted(true);
@@ -47,17 +51,28 @@ public class LiftSubsystem extends SubsystemBase{
 
     public void stopLift() {
         rightLiftMotor.set(0.0);
-        leftLiftMotor.set(0.0);
+        // leftLiftMotor.set(0.0);
     }
 
     public void LiftControl(double power) {
         // rightLiftMotor.set(Preferences.getDouble(Keys.intakeVoltKey, 3.0));
         rightLiftMotor.set(power);
-        leftLiftMotor.set(-power);
+        // leftLiftMotor.set(-power);
     }
 
 
-    public void SetLiftPosition(double Position) {
+    public enum LiftPosition {
+        LOWERED(0.0),
+        SHELF(100.0),
+        LOWPOST(150),
+        HIGHPOST(300);
+
+        double setPoint;
+        LiftPosition(double setPoint) {
+            setPoint = setPoint;
+        }
+    }
+    public Command gotoPosition(LiftPosition position) {
 
         var config = new Slot0Configs();
         config.kP = LiftConstants.kP;
@@ -67,12 +82,27 @@ public class LiftSubsystem extends SubsystemBase{
         rightLiftMotor.getConfigurator().apply(config);
         leftLiftMotor.getConfigurator().apply(config);
 
-        // create a position closed-loop request, voltage output, slot 0 configs
-        final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
+        return run(() -> {
 
-        // set position to 10 rotations
-        rightLiftMotor.setControl(m_request.withPosition(Position));
-        leftLiftMotor.setControl(m_request.withPosition(-Position));
+            // create a position closed-loop request, voltage output, slot 0 configs
+            final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
+
+            // set position to 10 rotations
+            rightLiftMotor.setControl(m_request.withPosition(position.setPoint));
+            // leftLiftMotor.setControl(m_request.withPosition(-position.setPoint));
+        });
+    }
+
+    public Command move(DoubleSupplier axis) {
+
+        return run(() -> {
+            double offset = axis.getAsDouble();
+
+            final VelocityVoltage leftController = new VelocityVoltage(offset);
+            final VelocityVoltage rightController = new VelocityVoltage(-offset);
+            rightLiftMotor.setControl(rightController);
+            // leftLiftMotor.setControl(leftController);
+        });
 
     }
     
@@ -103,7 +133,9 @@ public class LiftSubsystem extends SubsystemBase{
     }
 
     public void telemetry() {
-        SmartDashboard.putNumber("Lift Motor Velocity", rightLiftMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Lift Motor Position", rightLiftMotor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Left Motor Velocity", leftLiftMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Left Motor Position", leftLiftMotor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Right Motor Velocity", rightLiftMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Right Motor Position", rightLiftMotor.getPosition().getValueAsDouble());
     }
 }

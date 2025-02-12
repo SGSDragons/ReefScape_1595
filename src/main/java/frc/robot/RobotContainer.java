@@ -16,11 +16,13 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.LiftConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DynamicReefApproach;
+import frc.robot.subsystems.LiftSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -36,6 +38,8 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
   private final ApproachFactory approaches;
+
+  private final LiftSubsystem lift = new LiftSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -90,6 +94,12 @@ public class RobotContainer {
     driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
 
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
+
+    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+
+
+    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
+
   }
 
   /**
