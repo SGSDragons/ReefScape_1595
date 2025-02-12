@@ -79,7 +79,8 @@ public class RobotContainer {
 
     DriverSticks driver = new DriverSticks();
 
-    swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
+    Command driveCmd = swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY);
+    swerve.setDefaultCommand(driveCmd);
 
     driverController.leftBumper().whileTrue(
       swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX))
