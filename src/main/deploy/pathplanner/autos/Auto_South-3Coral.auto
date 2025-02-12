@@ -7,25 +7,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RedtoReefW2"
+            "pathName": "RedtoReefW"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DisSouthtoReefW1"
+            "pathName": "ReefWtoDisSouth"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DisSouthtoReefSW1"
+            "pathName": "DisSouthtoReefSW"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefSWtoDisSouth"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DisSouthtoReefSE"
           }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": false
 }
