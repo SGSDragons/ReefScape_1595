@@ -96,7 +96,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    Command auto = AutoBuilder.buildAuto("RedAuto1_2Coral");
+    Command auto = AutoBuilder.buildAuto("Auto_South-3Coral");
     return auto;
   }
 
