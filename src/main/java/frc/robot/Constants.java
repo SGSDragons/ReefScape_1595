@@ -139,12 +139,13 @@ public final class Constants {
 
     public class LiftConstants{
       public static final double kV = 0;
-      public static final double kP = 0;
+      public static final double kP = 0.2;
       public static final double kI = 0;
       public static final double kD = 0;
 
-      public static final int rightLiftMotorCanId = 0;
+      public static final int rightLiftMotorCanId = 16;
       public static final int leftLiftMotorCanId = 0;
+      public static final int ClimberMotorcanId = 15;
 
       public static final int Groundlevel = 0;
       public static final int Level1 = 0;

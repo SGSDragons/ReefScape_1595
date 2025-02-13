@@ -22,6 +22,7 @@ import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DynamicReefApproach;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.LiftSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -40,6 +41,7 @@ public class RobotContainer {
   private final ApproachFactory approaches;
 
   private final LiftSubsystem lift = new LiftSubsystem();
+  private final ClimbSubsystem climb = new ClimbSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -95,8 +97,15 @@ public class RobotContainer {
 
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
 
-    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    climb.setDefaultCommand(climb.stopClimb());
 
+    driverController.povUp().whileTrue(climb.Climbup());
+
+    driverController.povDown().whileTrue(climb.Climbdown());
+
+
+
+    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
     operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
 
