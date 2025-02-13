@@ -40,7 +40,7 @@ public class RobotContainer {
       DriverStation.refreshData();
     }
 
-    // swerve.resetOdometry(Reefscape.getStart());
+    swerve.resetOdometry(Reefscape.getStart());
 
     // Configure the trigger bindings
     configureBindings();
