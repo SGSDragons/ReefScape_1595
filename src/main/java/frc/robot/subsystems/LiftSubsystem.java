@@ -69,9 +69,10 @@ public class LiftSubsystem extends SubsystemBase{
 
         double setPoint;
         LiftPosition(double setPoint) {
-            setPoint = setPoint;
+            this.setPoint = setPoint;
         }
     }
+
     public Command gotoPosition(LiftPosition position) {
 
         var config = new Slot0Configs();
