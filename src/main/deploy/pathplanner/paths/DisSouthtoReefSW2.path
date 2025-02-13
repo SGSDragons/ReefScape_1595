@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 16.347856588924632,
+        "y": 0.9268910127527568
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 15.023222081801471,
+        "y": 0.600710161994484
+      },
+      "isLocked": false,
+      "linkedName": "SouthDis"
+    },
+    {
+      "anchor": {
+        "x": 12.350975485409007,
+        "y": 3.134545180376838
+      },
+      "prevControl": {
+        "x": 11.913435274011947,
+        "y": 1.2586587344898883
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "ReefSW2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 58.489594280670296
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -53.58543386478003
+  },
+  "useDefaultConstraints": true
+}
