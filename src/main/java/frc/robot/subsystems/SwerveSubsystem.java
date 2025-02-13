@@ -245,7 +245,7 @@ public class SwerveSubsystem extends SubsystemBase {
     {
       return run(() -> {
         
-        Translation2d joystick = new Translation2d(translationY.getAsDouble(), translationX.getAsDouble());
+        Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
         if (joystick.getNorm() < 0.2) {
             joystick = Translation2d.kZero;
         }

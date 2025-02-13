@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.65,
+        "y": 4.025
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.163392857142856,
+        "y": 2.144642857142857
+      },
+      "isLocked": false,
+      "linkedName": "ReefS"
+    },
+    {
+      "anchor": {
+        "x": 1.691015625,
+        "y": 0.4993303571428567
+      },
+      "prevControl": {
+        "x": 2.454910714285714,
+        "y": 1.2893415178571432
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "LLIntake"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -125.65532809790037
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -178.79859765100042
+  },
+  "useDefaultConstraints": true
+}

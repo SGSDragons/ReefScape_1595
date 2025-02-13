@@ -1,0 +1,59 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.904352678571428,
+        "y": 5.017410714285714
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.3885602678571427,
+        "y": 5.415680803571429
+      },
+      "isLocked": false,
+      "linkedName": "UMReef"
+    },
+    {
+      "anchor": {
+        "x": 1.1621651785714284,
+        "y": 7.1654575892857135
+      },
+      "prevControl": {
+        "x": 1.5800223214285714,
+        "y": 6.845535714285713
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "UMIntake"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6813063063063073,
+      "rotationDegrees": 135.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 128.95590783775887
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -61.69924423399362
+  },
+  "useDefaultConstraints": true
+}
