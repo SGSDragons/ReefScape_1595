@@ -7,13 +7,55 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start to reef"
+            "pathName": "RedtoReefW2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefW2toDisSouth"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DisSouthtoReefW1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefW1toDisSouth"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DisSouthtoReefSW2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefSW2toDisSouth"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DisSouthtoReefSW1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ReefSW1toDisSouth"
           }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }

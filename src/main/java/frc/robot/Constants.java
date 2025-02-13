@@ -137,6 +137,26 @@ public final class Constants {
 
     }
 
+    public class LiftConstants{
+      public static final double kV = 0;
+      public static final double kP = 0;
+      public static final double kI = 0;
+      public static final double kD = 0;
+
+      public static final int rightLiftMotorCanId = 0;
+      public static final int leftLiftMotorCanId = 0;
+
+      public static final int Groundlevel = 0;
+      public static final int Level1 = 0;
+      public static final int Level2 = 0;
+      public static final int Level3 = 0;
+      public static final int Level4 = 0;
+
+      public double RotationstoInches() {
+        return 0;
+      }
+    }
+
     public class Reefscape {
       public static boolean isRedAlliance() {
         var alliance = DriverStation.getAlliance();

@@ -12,14 +12,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.Constants.LiftConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DynamicReefApproach;
+import frc.robot.subsystems.LiftSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -31,8 +34,12 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //private final DrivetrainSubsystem drivetrain;
-  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(2), Pose2d.kZero);
+  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
+  private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
+  private final ApproachFactory approaches;
+
+  private final LiftSubsystem lift = new LiftSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -41,6 +48,7 @@ public class RobotContainer {
     }
 
     swerve.resetOdometry(Reefscape.getStart());
+    approaches = new ApproachFactory(Reefscape.getReefLocation());
 
     // Configure the trigger bindings
     configureBindings();
@@ -61,7 +69,7 @@ public class RobotContainer {
   //    Left joystick Up (-1 y-axis) maps to positive X.
   //    Left joystick left (-1 x-axis) maps to positive Y.
   // Thus, Blue axis are inverted.
-  
+
   class DriverSticks {
     private final double inverter = Reefscape.isRedAlliance() ? 1.0 : -1.0;
     double readAxis(XboxController.Axis axis) {
@@ -77,12 +85,21 @@ public class RobotContainer {
 
     DriverSticks driver = new DriverSticks();
 
-    swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
+    Command driveCmd = swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY);
+    swerve.setDefaultCommand(driveCmd);
 
     driverController.leftBumper().whileTrue(
       swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX))
     );
     driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
+
+    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
+
+    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+
+
+    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
+
   }
 
   /**
@@ -91,7 +108,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    Command auto = AutoBuilder.buildAuto("Auto_South-3Coral");
+    return auto;
   }
 
   public Command getTestCommand() {
