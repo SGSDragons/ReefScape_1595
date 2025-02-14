@@ -21,6 +21,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 // import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DifferentialFollower;
 // import com.ctre.phoenix6.controls.VelocityVoltage;
 // import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -33,7 +34,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class LiftSubsystem extends SubsystemBase{
 
     TalonFX rightLiftMotor;
-    TalonFX leftLiftMotor;
+    DifferentialFollower leftLiftMotor;
     PIDController pid = new PIDController(0, 0, 0);
 
 
@@ -41,21 +42,18 @@ public class LiftSubsystem extends SubsystemBase{
     public LiftSubsystem() {
         
         rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
-
+        leftLiftMotor = new DifferentialFollower(LiftConstants.rightLiftMotorCanId, true);
+        
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
-        leftLiftMotor.setNeutralMode(NeutralModeValue.Coast);
         
     }
 
     public void stopLift() {
         rightLiftMotor.set(0.0);
-        // leftLiftMotor.set(0.0);
     }
 
     public void LiftControl(double power) {
         rightLiftMotor.set(power);
-        // leftLiftMotor.set(power);
     }
 
 
@@ -79,7 +77,6 @@ public class LiftSubsystem extends SubsystemBase{
         config.kD = LiftConstants.kD;
 
         rightLiftMotor.getConfigurator().apply(config);
-        leftLiftMotor.getConfigurator().apply(config);
 
         return run(() -> {
 
@@ -88,7 +85,6 @@ public class LiftSubsystem extends SubsystemBase{
 
             // set position to 10 rotations
             rightLiftMotor.setControl(lift_request.withPosition(position.setPoint));
-            // leftLiftMotor.setControl(m_request.withPosition(position.setPoint));
         });
     }
 
