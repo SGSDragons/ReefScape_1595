@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.wpilibj.DataLogManager;
 import org.ironmaple.simulation.SimulatedArena;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -28,6 +30,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     container = new RobotContainer();
+    DataLogManager.start();
   }
 
   /**
