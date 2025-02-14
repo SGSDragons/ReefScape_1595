@@ -364,7 +364,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void resetController() {
-        // swerveDrive.swerveController.lastAngleScalar = swerveDrive.getPose().getRotation().getRadians();
+         swerveDrive.swerveController.lastAngleScalar = swerveDrive.getPose().getRotation().getRadians();
     }
 
     /**
