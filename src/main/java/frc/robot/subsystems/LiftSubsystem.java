@@ -21,7 +21,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 // import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DifferentialFollower;
+import com.ctre.phoenix6.controls.Follower;
 // import com.ctre.phoenix6.controls.VelocityVoltage;
 // import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -34,16 +34,17 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class LiftSubsystem extends SubsystemBase{
 
     TalonFX rightLiftMotor;
-    DifferentialFollower leftLiftMotor;
+    TalonFX leftLiftMotor;
     PIDController pid = new PIDController(0, 0, 0);
-
 
 
     public LiftSubsystem() {
         
         rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        leftLiftMotor = new DifferentialFollower(LiftConstants.rightLiftMotorCanId, true);
-        
+        leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+
+        leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
+
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
         
     }
@@ -92,6 +93,9 @@ public class LiftSubsystem extends SubsystemBase{
 
         return run(() -> {
             double offset = axis.getAsDouble();
+            if (Math.abs(offset) < 0.2) {
+                offset = 0.0;
+            }
 
             final VelocityVoltage leftController = new VelocityVoltage(offset);
             final VelocityVoltage rightController = new VelocityVoltage(offset);
@@ -110,8 +114,8 @@ public class LiftSubsystem extends SubsystemBase{
     }
 
     public void telemetry() {
-        SmartDashboard.putNumber("Left Motor Velocity", leftLiftMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Left Motor Position", leftLiftMotor.getPosition().getValueAsDouble());
+        // SmartDashboard.putNumber("Left Motor Velocity", leftLiftMotor.getVelocity().getValueAsDouble());
+        // SmartDashboard.putNumber("Left Motor Position", leftLiftMotor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Velocity", rightLiftMotor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", rightLiftMotor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", rightLiftMotor.getMotorVoltage().getValueAsDouble());
