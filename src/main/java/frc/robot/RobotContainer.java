@@ -97,11 +97,11 @@ public class RobotContainer {
 
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
 
-    climb.setDefaultCommand(climb.stopClimb());
+    // climb.setDefaultCommand(climb.climbStop());
 
-    driverController.povUp().whileTrue(climb.Climbup());
+    // driverController.povUp().whileTrue(climb.climbForward());
 
-    driverController.povDown().whileTrue(climb.Climbdown());
+    // driverController.povDown().whileTrue(climb.climbReverse());
 
 
 

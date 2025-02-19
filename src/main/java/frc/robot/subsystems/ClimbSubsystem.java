@@ -34,6 +34,16 @@ public class ClimbSubsystem extends SubsystemBase{
 
     TalonFX ClimbMotor;
 
+    public enum ClimbDirection {
+        UP(0.0),
+        DOWN(0.0);
+
+        double setpoint;
+        ClimbDirection(double setpoint) {
+            this.setpoint = setpoint;
+        }
+    }
+
 
     public ClimbSubsystem() {
         
@@ -42,16 +52,16 @@ public class ClimbSubsystem extends SubsystemBase{
         
     }
 
-    public Command stopClimb() {
-        return run(() -> { ClimbMotor.set(0.0); });
+    public void climbStop() {
+        ClimbMotor.set(0.0);
     }
 
-    public Command Climbup() {
-        return run(() -> { ClimbMotor.set(0.5); });
+    public void climbForward() {
+        ClimbMotor.set(0.5);
     }
 
-    public Command Climbdown() {
-        return run(() -> { ClimbMotor.set(-0.5); });
+    public void climbReverse() {
+        ClimbMotor.set(-0.5);
     }
 
     
