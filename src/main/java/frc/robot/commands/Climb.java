@@ -6,18 +6,29 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.ClimbSubsystem.ClimbDirection;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Climb extends Command {
 
   private final ClimbSubsystem climbSubsystem;
-  ClimbDirection direction;
+  public ClimbDirection direction;
 
-  public Climb(ClimbSubsystem climbSubsystem) {
+  public static enum ClimbDirection {
+    UP(0.0),
+    DOWN(0.0);
+
+    double setpoint;
+    ClimbDirection(double setpoint) {
+        this.setpoint = setpoint;
+    }
+  }
+
+  public Climb(ClimbSubsystem climbSubsystem, ClimbDirection direction) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.climbSubsystem = climbSubsystem;
     addRequirements(climbSubsystem);
+
+    this.direction = direction;
   }
 
   // Called when the command is initially scheduled.

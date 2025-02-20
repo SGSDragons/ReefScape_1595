@@ -21,10 +21,9 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.DynamicReefApproach;
-import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.LiftSubsystem;
-import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.*;
+import frc.robot.commands.*;
+import frc.robot.commands.Climb.ClimbDirection;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -97,11 +96,11 @@ public class RobotContainer {
 
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
 
-    // climb.setDefaultCommand(climb.climbStop());
+    climb.setDefaultCommand(climb.climbStop());
 
-    // driverController.povUp().whileTrue(climb.climbForward());
+    driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
 
-    // driverController.povDown().whileTrue(climb.climbReverse());
+    driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
 
 
 
