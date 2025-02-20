@@ -34,7 +34,6 @@ public class ClimbSubsystem extends SubsystemBase{
 
     TalonFX ClimbMotor;
 
-
     public ClimbSubsystem() {
         
         ClimbMotor = new TalonFX(LiftConstants.ClimberMotorcanId);
@@ -42,16 +41,16 @@ public class ClimbSubsystem extends SubsystemBase{
         
     }
 
-    public Command stopClimb() {
-        return run(() -> { ClimbMotor.set(0.0); });
+    public Command climbStop() {
+        return run(() -> ClimbMotor.set(0.0));
     }
 
-    public Command Climbup() {
-        return run(() -> { ClimbMotor.set(0.5); });
+    public void climbForward() {
+        ClimbMotor.set(0.5);
     }
 
-    public Command Climbdown() {
-        return run(() -> { ClimbMotor.set(-0.5); });
+    public void climbReverse() {
+        ClimbMotor.set(-0.5);
     }
 
     
