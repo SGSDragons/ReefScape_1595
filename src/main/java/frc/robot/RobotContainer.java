@@ -107,7 +107,13 @@ public class RobotContainer {
 
     lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
-    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
+    operatorController.povUp().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.HIGH));
+    operatorController.povDownLeft().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.MEDIUM));
+    operatorController.povDown().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.LOW));
+    operatorController.povRight().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
+    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.LOWERED));
+
+    operatorController.y().whileTrue(lift.reconfigure());
 
   }
 

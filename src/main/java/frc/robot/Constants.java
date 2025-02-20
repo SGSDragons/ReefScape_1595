@@ -138,8 +138,9 @@ public final class Constants {
     }
 
     public class LiftConstants{
-      public static final double kV = 0;
-      public static final double kP = 0.2;
+      public static final double kS = 0.5;
+      public static final double kG = 0;
+      public static final double kP = 0;
       public static final double kI = 0;
       public static final double kD = 0;
 
@@ -147,11 +148,11 @@ public final class Constants {
       public static final int leftLiftMotorCanId = 0;
       public static final int ClimberMotorcanId = 15;
 
-      public static final int Groundlevel = 0;
-      public static final int Level1 = 0;
-      public static final int Level2 = 0;
-      public static final int Level3 = 0;
-      public static final int Level4 = 0;
+      public static final double Lowered = 0;
+      public static final double Shelf = 13;
+      public static final double Low = 17;
+      public static final double Medium = 25;
+      public static final double High = 35;
 
       public double RotationstoInches() {
         return 0;

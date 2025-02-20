@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Preferences;
 // import edu.wpi.first.wpilibj.DriverStation;
 // import edu.wpi.first.wpilibj.I2C;
 // import edu.wpi.first.wpilibj.Joystick;
@@ -30,6 +31,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 // import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 // import com.revrobotics.ColorSensorV3;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 public class LiftSubsystem extends SubsystemBase{
 
@@ -58,26 +60,40 @@ public class LiftSubsystem extends SubsystemBase{
     }
 
 
-    public enum LiftPosition {
-        LOWERED(0.0),
-        SHELF(1.0),
-        LOWPOST(2),
-        HIGHPOST(3);
-
+    public class LiftPosition {
+        
         double setPoint;
-        LiftPosition(double setPoint) {
+        public LiftPosition(double setPoint) {
             this.setPoint = setPoint;
         }
+
+    }
+
+    LiftPosition LOWERED = new LiftPosition(Preferences.getDouble("Lift/Lowered", LiftConstants.Lowered));
+    LiftPosition SHELF = new LiftPosition(Preferences.getDouble("Lift/Shelf", LiftConstants.Shelf));
+    LiftPosition LOW  = new LiftPosition(Preferences.getDouble("Lift/Low", LiftConstants.Low));
+    LiftPosition MEDIUM = new LiftPosition(Preferences.getDouble("Lift/Medium", LiftConstants.Medium));
+    LiftPosition HIGH = new LiftPosition(Preferences.getDouble("Left/High", LiftConstants.High));
+
+
+    public Command reconfigure() {
+        return runOnce(() -> {
+            
+            var config = new Slot0Configs();
+            config.kG = Preferences.getDouble("gravity", LiftConstants.kG);
+            config.kS = Preferences.getDouble("static", LiftConstants.kS);
+            config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+            config.kP = Preferences.getDouble("proportional", LiftConstants.kP);
+            config.kI = Preferences.getDouble("integral", LiftConstants.kI);
+            config.kD = Preferences.getDouble("derivative", LiftConstants.kD);
+            SmartDashboard.putNumber("proportional", config.kG);
+
+            rightLiftMotor.getConfigurator().apply(config);
+        });
     }
 
     public Command gotoPosition(LiftPosition position) {
 
-        var config = new Slot0Configs();
-        config.kP = LiftConstants.kP;
-        config.kI = LiftConstants.kI;
-        config.kD = LiftConstants.kD;
-
-        rightLiftMotor.getConfigurator().apply(config);
 
         return run(() -> {
 
@@ -113,9 +129,11 @@ public class LiftSubsystem extends SubsystemBase{
         telemetry();
     }
 
+
     public void telemetry() {
         // SmartDashboard.putNumber("Left Motor Velocity", leftLiftMotor.getVelocity().getValueAsDouble());
         // SmartDashboard.putNumber("Left Motor Position", leftLiftMotor.getPosition().getValueAsDouble());
+
         SmartDashboard.putNumber("Right Motor Velocity", rightLiftMotor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", rightLiftMotor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", rightLiftMotor.getMotorVoltage().getValueAsDouble());
