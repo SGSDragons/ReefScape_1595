@@ -98,19 +98,20 @@ public class RobotContainer {
 
     climb.setDefaultCommand(climb.climbStop());
 
-    driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
+    // driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
 
-    driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
+    
+    // driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
 
 
 
     lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
-    operatorController.povUp().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.HIGH));
-    operatorController.povDownLeft().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.MEDIUM));
-    operatorController.povDown().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.LOW));
-    operatorController.povRight().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.SHELF));
-    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.LiftPosition.LOWERED));
+    operatorController.povUp().whileTrue(lift.gotoPosition(lift.HIGH));
+    operatorController.povDownLeft().whileTrue(lift.gotoPosition(lift.MEDIUM));
+    operatorController.povDown().whileTrue(lift.gotoPosition(lift.LOW));
+    operatorController.povRight().whileTrue(lift.gotoPosition(lift.SHELF));
+    operatorController.a().whileTrue(lift.gotoPosition(lift.LOWERED));
 
     operatorController.y().whileTrue(lift.reconfigure());
 

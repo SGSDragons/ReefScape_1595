@@ -69,11 +69,11 @@ public class LiftSubsystem extends SubsystemBase{
 
     }
 
-    LiftPosition LOWERED = new LiftPosition(Preferences.getDouble("Lift/Lowered", LiftConstants.Lowered));
-    LiftPosition SHELF = new LiftPosition(Preferences.getDouble("Lift/Shelf", LiftConstants.Shelf));
-    LiftPosition LOW  = new LiftPosition(Preferences.getDouble("Lift/Low", LiftConstants.Low));
-    LiftPosition MEDIUM = new LiftPosition(Preferences.getDouble("Lift/Medium", LiftConstants.Medium));
-    LiftPosition HIGH = new LiftPosition(Preferences.getDouble("Left/High", LiftConstants.High));
+    public final LiftPosition LOWERED = new LiftPosition(Preferences.getDouble("Lift/Lowered", LiftConstants.Lowered));
+    public final LiftPosition SHELF = new LiftPosition(Preferences.getDouble("Lift/Shelf", LiftConstants.Shelf));
+    public final LiftPosition LOW  = new LiftPosition(Preferences.getDouble("Lift/Low", LiftConstants.Low));
+    public final LiftPosition MEDIUM = new LiftPosition(Preferences.getDouble("Lift/Medium", LiftConstants.Medium));
+    public final LiftPosition HIGH = new LiftPosition(Preferences.getDouble("Left/High", LiftConstants.High));
 
 
     public Command reconfigure() {
