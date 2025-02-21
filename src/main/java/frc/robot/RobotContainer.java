@@ -98,10 +98,10 @@ public class RobotContainer {
 
     climb.setDefaultCommand(climb.climbStop());
 
-    // driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
+    driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
 
     
-    // driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
+    driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
 
 
 

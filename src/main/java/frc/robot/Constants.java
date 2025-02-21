@@ -146,7 +146,6 @@ public final class Constants {
 
       public static final int rightLiftMotorCanId = 16;
       public static final int leftLiftMotorCanId = 0;
-      public static final int ClimberMotorcanId = 15;
 
       public static final double Lowered = 0;
       public static final double Shelf = 13;
@@ -157,6 +156,10 @@ public final class Constants {
       public double RotationstoInches() {
         return 0;
       }
+    }
+
+    public class ClimbConstants {
+      public static final int ClimberMotorcanId = 15;
     }
 
     public class Reefscape {
