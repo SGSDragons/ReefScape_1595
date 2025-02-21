@@ -41,6 +41,7 @@ public class RobotContainer {
 
   private final LiftSubsystem lift = new LiftSubsystem();
   private final ClimbSubsystem climb = new ClimbSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -98,10 +99,10 @@ public class RobotContainer {
 
     climb.setDefaultCommand(climb.climbStop());
 
-    driverController.povUp().whileTrue(new Climb(climb, ClimbDirection.UP));
+    driverController.povUp().whileTrue(new Climb(climb, intake, ClimbDirection.UP));
 
     
-    driverController.povDown().whileTrue(new Climb(climb, ClimbDirection.DOWN));
+    driverController.povDown().whileTrue(new Climb(climb, intake, ClimbDirection.DOWN));
 
 
 
