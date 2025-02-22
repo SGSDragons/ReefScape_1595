@@ -68,11 +68,12 @@ public final class Constants {
     public static final int rightNoteAimerForwardChannel = 2;
     public static final int rightNoteAimerReverseChannel = 3;
 
-    public static final int indexerMotorCANId = 18;
-    public static final int indexerMotor2CANId = 15;
-    public static final int bottomSpinnerMotorCANId = 19;
-    public static final int middleSpinnerMotorCANId = 17;
-    public static final int topSpinnerMotorCANId = 16;
+    public static final int intakeRotationMotorCANId = 15;
+    public static final int frontWheelsMotorCANId = 16;
+    public static final int sideWheelsMotorCANId = 17;
+
+    public static final int middleSpinnerMotorCANId = 18;
+    public static final int topSpinnerMotorCANId = 19;
   }
 
   public static final class TuningValues {
@@ -137,16 +138,20 @@ public final class Constants {
 
     }
 
+    public class IntakeConstants{
+      public static final double kS = 0.1;
+    }
+
     public class LiftConstants{
       public static final double kS = 0.5;
       public static final double kG = 0;
       public static final double kP = 0;
       public static final double kI = 0;
       public static final double kD = 0;
+      public static final double kGravity = 0;
 
       public static final int rightLiftMotorCanId = 16;
       public static final int leftLiftMotorCanId = 0;
-      public static final int ClimberMotorcanId = 15;
 
       public static final double Ground = 0;
       public static final double Shelf = 13;
@@ -157,6 +162,10 @@ public final class Constants {
       public double RotationstoInches() {
         return 0;
       }
+    }
+
+    public class ClimbConstants {
+      public static final int ClimberMotorcanId = 15;
     }
 
     public class Reefscape {

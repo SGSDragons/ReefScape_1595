@@ -5,47 +5,52 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.CoralIntakeSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Climb extends Command {
 
   private final ClimbSubsystem climbSubsystem;
+  private final CoralIntakeSubsystem coralIntake;
   public ClimbDirection direction;
 
   public static enum ClimbDirection {
     UP(0.0),
-    DOWN(0.0);
+    DOWN(0.0),
+    ;
 
     double setpoint;
     ClimbDirection(double setpoint) {
-        this.setpoint = setpoint;
+      this.setpoint = setpoint;
     }
   }
 
-  public Climb(ClimbSubsystem climbSubsystem, ClimbDirection direction) {
+  public Climb(ClimbSubsystem climbSubsystem, CoralIntakeSubsystem coralIntake, ClimbDirection direction) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.climbSubsystem = climbSubsystem;
-    addRequirements(climbSubsystem);
+    this.coralIntake = coralIntake;
+    addRequirements(climbSubsystem, coralIntake);
 
     this.direction = direction;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    coralIntake.extend();
+    // Does this need to be delayed so coralIntake has time to clear?
+    // First activation will cause Climb to move to the extended position
+    climbSubsystem.activate();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-    switch (direction) {
-      case UP:
-        climbSubsystem.climbForward();
-        break;
-      case DOWN:
-        climbSubsystem.climbReverse();
-        break;
+    if (climbSubsystem.hasExtended() && true /* TODO: require a button be pressed */) {
+      // Second activation will cause Climb to move to the retracted position
+      climbSubsystem.activate();
     }
   }
 
@@ -53,9 +58,16 @@ public class Climb extends Command {
   @Override
   public void end(boolean interrupted) {}
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // Don't ever let this command finish because it needs to keep the coral
+    // intake reserved.
     return false;
+  }
+
+  @Override
+  public InterruptionBehavior getInterruptionBehavior() {
+    // Don't let other commands disrupt this one.
+    return InterruptionBehavior.kCancelIncoming;
   }
 }
