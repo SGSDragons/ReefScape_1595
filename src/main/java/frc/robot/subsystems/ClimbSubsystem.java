@@ -5,6 +5,9 @@ package frc.robot.subsystems;
 // import edu.wpi.first.wpilibj.I2C;
 // import edu.wpi.first.wpilibj.Joystick;
 // import edu.wpi.first.wpilibj.Preferences;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.compound.Diff_DutyCycleOut_Velocity;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -31,49 +34,88 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 // import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import java.util.function.DoubleSupplier;
 // import com.revrobotics.ColorSensorV3;
 
 public class ClimbSubsystem extends SubsystemBase{
 
-    TalonFX ClimbMotor;
+    TalonFX climbMotor;
+
+    private boolean hasExtended = false;
+    private double extendedPosition = 1.0;
+    private double retractedPosition = 2.0;
 
     public ClimbSubsystem() {
         
-        ClimbMotor = new TalonFX(ClimbConstants.ClimberMotorcanId);
-        ClimbMotor.setNeutralMode(NeutralModeValue.Brake);
+        climbMotor = new TalonFX(ClimbConstants.ClimberMotorcanId);
+        climbMotor.setNeutralMode(NeutralModeValue.Brake);
         
+    }
+
+    public void activate() {
+        final double targetPosition;
+        if (hasExtended == false) {
+            targetPosition = extendedPosition;
+        } else {
+            targetPosition = retractedPosition;
+        }
+
+        PositionVoltage target = new PositionVoltage(extendedPosition);
+        climbMotor.setControl(target);
     }
 
     public Command climbStop() {
-        return run(() -> ClimbMotor.set(0.0));
+        return run(() -> climbMotor.set(0.0));
     }
 
     public void climbUp() {
-        var config = new Slot0Configs();
-        config.kG = 0.0;
-        config.kP = 0.0;
-        config.kI = 0.0;
-        config.kD = 0.0;
-        
-        ClimbMotor.getConfigurator().apply(config);
         final PositionVoltage position = new PositionVoltage(0).withSlot(0);
-        ClimbMotor.setControl(position);
+        climbMotor.setControl(position);
     }
 
     public void climbDown() {
         final PositionVoltage position = new PositionVoltage(0).withSlot(0);
-        ClimbMotor.setControl(position);
+        climbMotor.setControl(position);
     }
 
-    
+    public boolean hasExtended() {
+        return hasExtended;
+    }
+
+    public Command drive(DoubleSupplier speedSupplier) {
+        return run(() -> {
+            double speed = speedSupplier.getAsDouble();
+            if (Math.abs(speed) < 0.1) {
+                speed = 0.0;
+            }
+            climbMotor.setControl(new VelocityVoltage(speed));
+        });
+    }
+    public Command reconfigure() {
+        return runOnce(() -> {
+            var config = new Slot0Configs();
+            config.kP = getPreference("proportional", 0.0);
+            climbMotor.getConfigurator().apply(config);
+        });
+    }
+
     @Override
     public void periodic() {
+        if (climbMotor.getPosition().getValueAsDouble() > 0.9 * extendedPosition) {
+            hasExtended = true;
+        }
+
         telemetry();
     }
 
     public void telemetry() {
-        SmartDashboard.putNumber("Climb Motor Velocity", ClimbMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Climb Motor Position", ClimbMotor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Climb Motor Voltage", ClimbMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Climb Motor Velocity", climbMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Climb Motor Position", climbMotor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Climb Motor Voltage", climbMotor.getMotorVoltage().getValueAsDouble());
+    }
+
+    public double getPreference(String key, double fallback) {
+        return Preferences.getDouble("climb/" + key, fallback);
     }
 }

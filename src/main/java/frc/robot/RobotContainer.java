@@ -5,18 +5,11 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants.LiftConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,7 +34,7 @@ public class RobotContainer {
 
   private final LiftSubsystem lift = new LiftSubsystem();
   private final ClimbSubsystem climb = new ClimbSubsystem();
-  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -97,14 +90,13 @@ public class RobotContainer {
 
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
 
-    climb.setDefaultCommand(climb.climbStop());
+    //climb.setDefaultCommand(climb.climbStop());
+    climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
     driverController.povUp().whileTrue(new Climb(climb, intake, ClimbDirection.UP));
 
     
     driverController.povDown().whileTrue(new Climb(climb, intake, ClimbDirection.DOWN));
-
-
 
     lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
