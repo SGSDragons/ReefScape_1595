@@ -89,13 +89,15 @@ public class ClimbSubsystem extends SubsystemBase{
             if (Math.abs(speed) < 0.1) {
                 speed = 0.0;
             }
-            climbMotor.setControl(new VelocityVoltage(speed));
+
+            climbMotor.set(speed);
+            // climbMotor.setControl(new VelocityVoltage(speed));
         });
     }
     public Command reconfigure() {
         return runOnce(() -> {
             var config = new Slot0Configs();
-            config.kP = getPreference("proportional", 0.0);
+            config.kP = getPreference("     ", 0.0);
             climbMotor.getConfigurator().apply(config);
         });
     }
