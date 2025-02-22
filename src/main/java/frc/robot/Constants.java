@@ -148,7 +148,7 @@ public final class Constants {
       public static final int leftLiftMotorCanId = 0;
       public static final int ClimberMotorcanId = 15;
 
-      public static final double Lowered = 0;
+      public static final double Ground = 0;
       public static final double Shelf = 13;
       public static final double Low = 17;
       public static final double Medium = 25;

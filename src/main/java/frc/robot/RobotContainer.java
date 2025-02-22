@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.function.DoubleSupplier;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -105,15 +107,16 @@ public class RobotContainer {
 
 
 
-    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    //lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
-    operatorController.povUp().whileTrue(lift.gotoPosition(lift.HIGH));
-    operatorController.povDownLeft().whileTrue(lift.gotoPosition(lift.MEDIUM));
-    operatorController.povDown().whileTrue(lift.gotoPosition(lift.LOW));
-    operatorController.povRight().whileTrue(lift.gotoPosition(lift.SHELF));
-    operatorController.a().whileTrue(lift.gotoPosition(lift.LOWERED));
+    DoubleSupplier leftY = () -> operatorController.getRawAxis(Axis.kRightY.value);
+    operatorController.povUp().whileTrue(lift.gotoPosition(lift.High, leftY));
+    operatorController.povDownLeft().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    operatorController.povDown().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    operatorController.povRight().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.a().whileTrue(lift.gotoPosition(lift.Ground, leftY));
 
-    operatorController.y().whileTrue(lift.reconfigure());
+    //operatorController.y().whileTrue(lift.reconfigure());
 
   }
 

@@ -35,94 +35,114 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 public class LiftSubsystem extends SubsystemBase{
 
-    TalonFX rightLiftMotor;
-    TalonFX leftLiftMotor;
-    PIDController pid = new PIDController(0, 0, 0);
-
+    final TalonFX motor;
 
     public LiftSubsystem() {
         
-        rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+        TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
+        TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
-
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
-        
+
+        var config = new Slot0Configs();
+        config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+        config.kG = getPreference("gravity", LiftConstants.kG);
+        config.kS = getPreference("static", LiftConstants.kS);
+        config.kP = getPreference("proportional", LiftConstants.kP);
+        config.kI = getPreference("integral", LiftConstants.kI);
+        config.kD = getPreference("derivative", LiftConstants.kD);
+
+        rightLiftMotor.getConfigurator().apply(config);
+
+        motor = rightLiftMotor;
     }
 
+
     public void stopLift() {
-        rightLiftMotor.set(0.0);
+        motor.set(0.0);
     }
 
     public void LiftControl(double power) {
-        rightLiftMotor.set(power);
+        motor.set(power);
     }
 
 
     public class LiftPosition {
         
         double setPoint;
-        public LiftPosition(double setPoint) {
-            this.setPoint = setPoint;
+        String name;
+
+        public LiftPosition(String name, double fallback) {
+            this.setPoint = getPreference(name, fallback);
+            this.name = name;
         }
 
+        public void adjust(double shift) {
+            this.setPoint += shift;
+            setPreference(name, shift);
+        }
     }
 
-    public final LiftPosition LOWERED = new LiftPosition(Preferences.getDouble("Lift/Lowered", LiftConstants.Lowered));
-    public final LiftPosition SHELF = new LiftPosition(Preferences.getDouble("Lift/Shelf", LiftConstants.Shelf));
-    public final LiftPosition LOW  = new LiftPosition(Preferences.getDouble("Lift/Low", LiftConstants.Low));
-    public final LiftPosition MEDIUM = new LiftPosition(Preferences.getDouble("Lift/Medium", LiftConstants.Medium));
-    public final LiftPosition HIGH = new LiftPosition(Preferences.getDouble("Left/High", LiftConstants.High));
+    public final LiftPosition Ground = new LiftPosition("Ground", LiftConstants.Ground); // Should be 0
+    public final LiftPosition Shelf = new LiftPosition("Shelf", LiftConstants.Shelf);
+    public final LiftPosition Low  = new LiftPosition("Low", LiftConstants.Low);
+    public final LiftPosition Medium = new LiftPosition("Medium", LiftConstants.Medium);
+    public final LiftPosition High = new LiftPosition("High", LiftConstants.High);
 
-
-    public Command reconfigure() {
-        return runOnce(() -> {
-            
-            var config = new Slot0Configs();
-            config.kG = Preferences.getDouble("gravity", LiftConstants.kG);
-            config.kS = Preferences.getDouble("static", LiftConstants.kS);
-            config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
-            config.kP = Preferences.getDouble("proportional", LiftConstants.kP);
-            config.kI = Preferences.getDouble("integral", LiftConstants.kI);
-            config.kD = Preferences.getDouble("derivative", LiftConstants.kD);
-            SmartDashboard.putNumber("proportional", config.kG);
-
-            rightLiftMotor.getConfigurator().apply(config);
-        });
-    }
-
-    public Command gotoPosition(LiftPosition position) {
+    public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
 
         return run(() -> {
 
-            // create a position closed-loop request, voltage output, slot 0 configs
-            final PositionVoltage lift_request = new PositionVoltage(0).withSlot(0);
-
-            // set position to 10 rotations
-            rightLiftMotor.setControl(lift_request.withPosition(position.setPoint));
-        });
-    }
-
-    public Command move(DoubleSupplier axis) {
-
-        return run(() -> {
             double offset = axis.getAsDouble();
-            if (Math.abs(offset) < 0.2) {
-                offset = 0.0;
+            if (Math.abs(offset) > 0.2) {
+                position.adjust(offset * 0.01);
             }
 
-            final VelocityVoltage leftController = new VelocityVoltage(offset);
-            final VelocityVoltage rightController = new VelocityVoltage(offset);
-            rightLiftMotor.set(offset);
+            // create a position closed-loop request, voltage output, slot 0 configs
+            final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
 
-            // rightLiftMotor.setControl(rightController);
-            // rightLiftMotor.getMotorVoltage();
-            // leftLiftMotor.setControl(leftController);
+            // set position to 10 rotations
+            motor.setControl(lift_request);
+        });
+    }
+
+    public Command Ground() {
+
+        return run(() -> {
+
+            final PositionVoltage lift_request = new PositionVoltage(0).withSlot(0);
+            motor.setControl(lift_request); 
+
         });
 
     }
+
+    // public Command move(DoubleSupplier axis) {
+
+    //     return run(() -> {
+    //         double offset = axis.getAsDouble();
+    //         if (Math.abs(offset) < 0.2) {
+    //             offset = 0.0;
+    //         }
+
+    //         final VelocityVoltage leftController = new VelocityVoltage(offset);
+    //         final VelocityVoltage rightController = new VelocityVoltage(offset);
+    //         //rightLiftMotor.set(offset);
+
+    //         // create a position closed-loop request, voltage output, slot 0 configs
+    //         final PositionVoltage lift_request = new PositionVoltage(0).withSlot(0);
+
+    //         // set position to 10 rotations
+    //         rightLiftMotor.setControl(lift_request.withPosition(position.setPoint));
+
+    //         // rightLiftMotor.setControl(rightController);
+    //         // rightLiftMotor.getMotorVoltage();
+    //         // leftLiftMotor.setControl(leftController);
+    //     });
+
+    // }
     
     @Override
     public void periodic() {
@@ -134,8 +154,16 @@ public class LiftSubsystem extends SubsystemBase{
         // SmartDashboard.putNumber("Left Motor Velocity", leftLiftMotor.getVelocity().getValueAsDouble());
         // SmartDashboard.putNumber("Left Motor Position", leftLiftMotor.getPosition().getValueAsDouble());
 
-        SmartDashboard.putNumber("Right Motor Velocity", rightLiftMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("Right Motor Position", rightLiftMotor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Right Motor Voltage", rightLiftMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Right Motor Velocity", motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
+    }
+
+    private static double getPreference(String key, double fallback) {
+        return Preferences.getDouble("Lift/" + key, fallback);
+    }
+
+    private static void setPreference(String key, double newValue) {
+        Preferences.setDouble("Lift/" + key, newValue);
     }
 }
