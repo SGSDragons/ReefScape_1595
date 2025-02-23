@@ -106,7 +106,7 @@ public class RobotContainer {
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    DoubleSupplier leftY = () -> operatorController.getRawAxis(Axis.kLeftY.value);
+    DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
     operatorController.b().whileTrue(lift.gotoPosition(lift.Medium, leftY));
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));

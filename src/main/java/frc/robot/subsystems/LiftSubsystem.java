@@ -66,8 +66,8 @@ public class LiftSubsystem extends SubsystemBase{
         }
 
         public void adjust(double shift) {
-            this.setPoint += shift;
-            setPreference(name, shift);
+            setPoint += shift;
+            setPreference(name, setPoint);
         }
     }
 
@@ -81,10 +81,7 @@ public class LiftSubsystem extends SubsystemBase{
 
         return run(() -> {
 
-            double offset = axis.getAsDouble();
-            if (Math.abs(offset) > 0.2) {
-                position.adjust(offset * 0.01);
-            }
+            position.adjust(0.01*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
             // create a position closed-loop request, voltage output, slot 0 configs
             final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
