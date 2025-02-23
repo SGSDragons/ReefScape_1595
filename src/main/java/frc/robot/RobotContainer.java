@@ -6,12 +6,13 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,6 +39,9 @@ public class RobotContainer {
   private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
 
+  private final EventLoop testTriggers = new EventLoop();
+  private final EventLoop teleopTriggers = new EventLoop();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     while (DriverStation.getAlliance().isEmpty()) {
@@ -46,9 +50,6 @@ public class RobotContainer {
 
     swerve.resetOdometry(Reefscape.getStart());
     approaches = new ApproachFactory(Reefscape.getReefLocation());
-
-    // Configure the trigger bindings
-    configureBindings();
   }
 
   //      ______________________________(17, 8)
@@ -77,40 +78,55 @@ public class RobotContainer {
     public double lookX() { return inverter*readAxis(Axis.kRightX); }
     public double lookY() { return inverter*readAxis(Axis.kRightY); }
   }
-  
-  private void configureBindings() {
+  private final DriverSticks driver = new DriverSticks();
 
-    DriverSticks driver = new DriverSticks();
+  // Controller behaviors when running in teleop mode. These should be tuned
+  // for control, precision and speed when playing the game.
+  public void engageTeleopMode() {
+    // Clear any bound triggers and create new bindings
+    CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
-    Command driveCmd = swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY);
-    swerve.setDefaultCommand(driveCmd);
+    // Drive relative to the field by default.
+    // Left joystick up is away from the driver station. Left joystick left moves left on the field
+    // Right joystick up looks away from the driver station. Right joystick left looks left on the field
+    swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
 
-    driverController.leftBumper().whileTrue(
-      swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX))
-    );
-    driverController.rightTrigger().whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
+    // When holding the right bumper, change joysticks to drive relative to the Robot (left y is "forward", right x turns left/right)
+    driverController.rightBumper().whileTrue(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
-    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
-
-    //climb.setDefaultCommand(climb.climbStop());
-    climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    // When holding the right trigger, disable right joystick and make robot always face the reef
+    driverController.rightTrigger(0.0, teleopTriggers).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
+    driverController.a(teleopTriggers).whileTrue(new DynamicReefApproach(swerve, approaches));
 
     driverController.povUp().whileTrue(new Climb(climb, intake, ClimbDirection.UP));
-
-    
     driverController.povDown().whileTrue(new Climb(climb, intake, ClimbDirection.DOWN));
 
-    //lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    // Lower the lift to its ground position whenever the operator is pushing the lift to another target
+    lift.setDefaultCommand(lift.goToGround());
 
-    DoubleSupplier leftY = () -> operatorController.getRawAxis(Axis.kRightY.value);
-    operatorController.povUp().whileTrue(lift.gotoPosition(lift.High, leftY));
-    operatorController.povDownLeft().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    operatorController.povDown().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.povRight().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Ground, leftY));
+    // Going to other positions requires holding a button. The joystick can be used
+    // to make slow adjustments to the target position. These adjustments are permanent.
+    DoubleSupplier leftY = () -> operatorController.getRawAxis(Axis.kLeftY.value);
+    operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
+    operatorController.b().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+  }
 
-    //operatorController.y().whileTrue(lift.reconfigure());
+  // Controller behaviors when running in test mode. These are meant for
+  // maximum flexibility (eg. moving the lift/climbers to arbitrary positions)
+  public void engageTestMode() {
+    // Clear any bound triggers and create new bindings
+    CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
+    swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
+    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kLeftY.value)));
+    climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+
+    // Reread Lift PID constants from preferences
+    operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
+
+    swerve.setMotorBrake(false);
   }
 
   /**
@@ -119,11 +135,10 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    Command auto = AutoBuilder.buildAuto("Auto_South-3Coral");
-    return auto;
-  }
-
-  public Command getTestCommand() {
     return null;
+    // CB: Do not return a real auto until we've got more safeguards. We don't
+    // want a misclick trigger an auto that causes the robot to make large movements
+//    Command auto = AutoBuilder.buildAuto("Auto_South-3Coral");
+//    return auto;
   }
 }
