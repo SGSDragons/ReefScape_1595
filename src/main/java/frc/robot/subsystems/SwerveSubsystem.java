@@ -224,7 +224,7 @@ public class SwerveSubsystem extends SubsystemBase {
         return run(() -> {
 
             Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
-            if (joystick.getNorm() < 0.2) {
+            if (joystick.getNorm() < 0.1) {
                 joystick = Translation2d.kZero;
             }
 
@@ -246,17 +246,14 @@ public class SwerveSubsystem extends SubsystemBase {
       return run(() -> {
         
         Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
-        if (joystick.getNorm() < 0.2) {
+        if (joystick.getNorm() < 0.1) {
             joystick = Translation2d.kZero;
         }
-
-        Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
+        double omega = MathUtil.applyDeadband(angularRotationX.getAsDouble(), 0.2);
+        omega = Math.pow(omega, 3) * swerveDrive.getMaximumChassisAngularVelocity() / 4.0;
 
         // Make the robot move
-        swerveDrive.drive(joystick,
-                          Math.pow(angularRotationX.getAsDouble(), 3) * swerveDrive.getMaximumChassisAngularVelocity(),
-                          false,
-                          false);
+        swerveDrive.drive(joystick, omega, false, false);
       });
     }
 
