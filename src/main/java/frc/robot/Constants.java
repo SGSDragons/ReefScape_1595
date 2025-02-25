@@ -24,63 +24,24 @@ public final class Constants {
 
   public static final class OperatorConstants {
 
-    public static final int driverControllerPort = 0;
-    public static final int operatorControllerPort = 1;
-    public static final double stickDeadband() { return Preferences.getDouble("Deadband", 0.1); }
+      public static final int driverControllerPort = 0;
+      public static final int operatorControllerPort = 1;
 
-    // Austin controller button names --> values
-    public static final int backLeftSingleSwitch = 1;
-    public static final int topLeftToggleBack = 2;
-    public static final int topLeftToggleForward = 3;
-    public static final int frontFarLeftToggleUp = 4;
-    public static final int frontFarLeftToggleDown = 5;
-    public static final int frontNearLeftToggleUp = 6;
-    public static final int frontNearLeftToggleDown = 7;
-    public static final int frontRightToggleDown = 8; 
-    public static final int frontRightToggleUp = 9;
-    public static final int topRightToggleForward = 10;
-    public static final int topRightToggleBack = 11;
-    public static final int backRightSingleSwitch = 12;
-    public static final int topLeftButton = 13; 
-    public static final int resetButton = 14;
-    public static final int cancelButton = 15;
-    public static final int rollerButton = 16;
-    public static final int rollerLeft = 17;
-    public static final int rollerRight = 18;
-    public static final int frontLeftBottomSwitchLeft = 19;
-    public static final int frontLeftBottomSwitchRight = 20;
-    public static final int frontLeftMiddleSwitchDown = 21;
-    public static final int frontLeftMiddleSwitchUp = 22;
-    public static final int frontRightBottomSwitchLeft = 23;
-    public static final int frontRightBottomSwitchRight = 24;
-    public static final int frontRightMiddleSwitchDown = 25;  
-    public static final int frontRightMiddleSwitchUp = 26;
-}
-
+      public static double stickDeadband() {
+          return Preferences.getDouble("Deadband", 0.1);
+      }
+  }
   //Hardware IDs for parts on robot (excluding drivetrain).
   public static final class HardwareID {
-    public static final int leftClimberForwardChannel = 4;
-    public static final int leftClimberReverseChannel = 5;
-    public static final int rightClimberForwardChannel = 6;
-    public static final int rightClimberReverseChannel = 7;
-    public static final int leftNoteAimerForwardChannel = 0;
-    public static final int leftNoteAimerReverseChannel = 1;
-    public static final int rightNoteAimerForwardChannel = 2;
-    public static final int rightNoteAimerReverseChannel = 3;
 
-    public static final int intakeRotationMotorCANId = 15;
-    public static final int frontWheelsMotorCANId = 16;
-    public static final int sideWheelsMotorCANId = 17;
+      public static final int rightLiftMotorCanId = 16; //Lift motors
+      public static final int leftLiftMotorCanId = 0; //Lift motors
 
-    public static final int middleSpinnerMotorCANId = 18;
-    public static final int topSpinnerMotorCANId = 19;
-  }
+      public static final int ClimberMotorcanId = 15; //Climber motor
 
-  public static final class TuningValues {
-    public static final double launcherkV = 0.14;
-    public static final double launcherkP = 8.0;
-    public static final double launcherkI = 0.001;
-    public static final double launcherkD = 0.0;
+      public static final int intakeRotationMotorCANId = 1; //Coral intake motors
+      public static final int frontWheelsMotorCANId = 2; //Coral intake motors
+      public static final int sideWheelsMotorCANId = 3; //Coral intake motors
   }
 
   public static final class SystemToggles {
@@ -92,12 +53,6 @@ public final class Constants {
          public static final double kMaxAccelerationMetersPerSecondSquared = 3;
          public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
          public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-     
-         /*
-          public static final double kPXController = 3;
-          public static final double kPYController = 3;
-          public static final double kPThetaController = 4;
-          */
 
           public static double kPXController = Preferences.getDouble(Keys.auto_kPXKey, 3);
           public static double kPThetaController = Preferences.getDouble(Keys.auto_kPThetaKey, 4);
@@ -120,25 +75,9 @@ public final class Constants {
       public static final String auto_kPThetaKey = "Auto kP Theta";
       public static final String maxSpeedKey = "Max Speed";
       public static final String maxAngularVelocityKey = "Max Angular Velocity";
-
-      // Intake, Index, Launch
-      public static final String indexVoltKey = "Indexer Voltage";
-      public static final String indexAmpVoltKey = "Indexer Amp-Shot Voltage";
-      public static final String intakeVoltKey = "Intake Voltage";
-      public static final String speakerHighAimV = "Speaker-Shot High-Aim Velocity";
-      public static final String speakerLowAimV = "Speaker-Shot Lower-Aim Velocity";
-      public static final String ampV = "Amplifier-Shot Velocity";
-      public static final String launcherTolerance = "Launcher Tolerance";
-
-      public static final String characterizationKey = "System Characterization Mode";
-      public static final String compressorOnlyKey = "Compressor Only Mode";
-
-      public static final String correctNotePositionTimeKey = "Note Correction Outtake Seconds";
-      public static final String minimumNoteProximityKey = "Note Detection Proximity";
-
     }
 
-    public class IntakeConstants{
+    public class CoralIntakeConstants {
       public static final double kS = 0.1;
     }
 

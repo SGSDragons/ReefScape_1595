@@ -20,9 +20,9 @@ public class CoralIntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
   public CoralIntakeSubsystem() {
 
-//    intakeRotationMotor = new TalonFX(Constants.IntakeConstants.intakeRotationMotorCanId);
-//    frontWheelsMotor = new TalonFX(Constants.IntakeConstants.frontWheelsMotorCanId);
-//    sideWheelsMotor = new TalonFX(IntakeConstants.sideWheelsMotorCanId);
+//    intakeRotationMotor = new TalonFX(Constants.CoralIntakeConstants.intakeRotationMotorCanId);
+//    frontWheelsMotor = new TalonFX(Constants.CoralIntakeConstants.frontWheelsMotorCanId);
+//    sideWheelsMotor = new TalonFX(CoralIntakeConstants.sideWheelsMotorCanId);
 //
 //    intakeRotationMotor.setNeutralMode(NeutralModeValue.Brake);
 //
@@ -40,9 +40,9 @@ public class CoralIntakeSubsystem extends SubsystemBase {
   public void extend() {
 //    var config = new Slot0Configs();
 //    config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
-//    config.kS = getPreference("4bar/static", 0.0);
-//    config.kP = getPreference("4bar/proportional", 0.0);
-//    config.kD = getPreference("4bar/derivative", 0.0);
+//    config.kS = getPreference("..../static", 0.0);
+//    config.kP = getPreference(".../proportional", 0.0);
+//    config.kD = getPreference(".../derivative", 0.0);
 //    intakeRotationMotor.getConfigurator().apply(config);
 //
 //    double extendedPosition = getPreference("extendedPosition", 0.0);
@@ -51,6 +51,6 @@ public class CoralIntakeSubsystem extends SubsystemBase {
   }
 
   public double getPreference(String key, double fallback) {
-    return Preferences.getDouble("intake/" + key, fallback);
+    return Preferences.getDouble("CoralIntake/" + key, fallback);
   }
 }

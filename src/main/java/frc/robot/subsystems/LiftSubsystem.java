@@ -27,7 +27,7 @@ public class LiftSubsystem extends SubsystemBase{
     public LiftSubsystem() {
         
         TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+        TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
