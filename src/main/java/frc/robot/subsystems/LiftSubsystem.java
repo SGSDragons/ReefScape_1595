@@ -20,12 +20,14 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 public class LiftSubsystem extends SubsystemBase{
 
     final TalonFX motor;
+    TalonFX leftLiftMotor;
+
     final BooleanSupplier bottomReached;
 
     public LiftSubsystem() {
         
         TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+        leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -81,7 +83,7 @@ public class LiftSubsystem extends SubsystemBase{
 
         return run(() -> {
 
-            position.adjust(0.01*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
+            position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
             // create a position closed-loop request, voltage output, slot 0 configs
             final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
@@ -108,9 +110,9 @@ public class LiftSubsystem extends SubsystemBase{
         });
     }
 
-     public Command move(DoubleSupplier axis) {
+    public Command move(DoubleSupplier axis) {
          return run(() -> {
-             double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2);
+             double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
              motor.set(speed);
          });
     }
@@ -125,7 +127,9 @@ public class LiftSubsystem extends SubsystemBase{
         SmartDashboard.putNumber("Right Motor Velocity", motor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
     }
+
 
     private static double getPreference(String key, double fallback) {
         return Preferences.getDouble("Lift/" + key, fallback);

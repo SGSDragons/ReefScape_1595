@@ -102,11 +102,12 @@ public class RobotContainer {
     driverController.povDown().whileTrue(new Climb(climb, intake, ClimbDirection.DOWN));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    lift.setDefaultCommand(lift.goToGround());
+    //lift.setDefaultCommand(lift.goToGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
+    lift.setDefaultCommand(lift.move(leftY));
     operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
     operatorController.b().whileTrue(lift.gotoPosition(lift.Medium, leftY));
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
@@ -119,12 +120,17 @@ public class RobotContainer {
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
+    DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
+
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
-    lift.setDefaultCommand(lift.move(() -> operatorController.getRawAxis(Axis.kLeftY.value)));
-    climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    lift.setDefaultCommand(lift.move(leftY));
+    climb.setDefaultCommand(climb.drive(() -> driverController.getRawAxis(Axis.kRightY.value)));
 
     // Reread Lift PID constants from preferences
     operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
+
+    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
     swerve.setMotorBrake(false);
   }
