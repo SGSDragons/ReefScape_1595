@@ -61,7 +61,7 @@ public class ClimbSubsystem extends SubsystemBase{
             targetPosition = retractedPosition;
         }
 
-        PositionVoltage target = new PositionVoltage(extendedPosition);
+        PositionVoltage target = new PositionVoltage(targetPosition);
         climbMotor.setControl(target);
     }
 
