@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,6 +18,10 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 
 public class LiftSubsystem extends SubsystemBase{
@@ -25,7 +30,10 @@ public class LiftSubsystem extends SubsystemBase{
     TalonFX leftLiftMotor;
 
     SparkMax rotationMotor;
-    
+    SparkClosedLoopController rotationController;
+    RelativeEncoder rotationEncoder;
+    //PIDController pid = new PIDController(0, 0, 0);
+
 
     final BooleanSupplier bottomReached;
 
@@ -33,7 +41,10 @@ public class LiftSubsystem extends SubsystemBase{
         
         TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
         TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
-        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, null);
+
+        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, MotorType.kBrushless);
+        SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
+        RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -61,10 +72,6 @@ public class LiftSubsystem extends SubsystemBase{
 
     public void stopLift() {
         motor.set(0.0);
-    }
-
-    public void Rotate(){
-
     }
 
     public static class LiftPosition {
@@ -95,12 +102,14 @@ public class LiftSubsystem extends SubsystemBase{
 
 
         return run(() -> {
+            if (position == High){
+                Rotate(TopAngle);
+            }
 
             position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
             // create a position closed-loop request, voltage output, slot 0 configs
             final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
-
             // set position to 10 rotations
             motor.setControl(lift_request);
         });
@@ -109,6 +118,7 @@ public class LiftSubsystem extends SubsystemBase{
     public Command goToGround() {
 
         return run(() -> {
+            Rotate(DeafaltAngle);
             if (motor.getPosition().getValueAsDouble() > 0.2) {
                 // Drive with a PID when far away for max speed.
                 motor.setControl(new PositionVoltage(0));
@@ -125,11 +135,15 @@ public class LiftSubsystem extends SubsystemBase{
 
     public Command move(DoubleSupplier axis) {
          return run(() -> {
+            Rotate(DeafaltAngle);
              double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
              motor.set(speed);
          });
     }
 
+    public void Rotate(double position){
+        rotationController.setReference(position, ControlType.kPosition);
+    }
     
     @Override
     public void periodic() {
@@ -141,7 +155,8 @@ public class LiftSubsystem extends SubsystemBase{
         SmartDashboard.putNumber("Right Motor Velocity", motor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Rotation Motor Position", rotationEncoder.getPosition());
+        //SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
     }
 
 
