@@ -4,12 +4,20 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.CoralIntakeConstants;
+import frc.robot.Constants.LiftConstants;
 
 public class CoralIntakeSubsystem extends SubsystemBase {
 
@@ -17,37 +25,75 @@ public class CoralIntakeSubsystem extends SubsystemBase {
   TalonFX frontWheelsMotor;
   TalonFX sideWheelsMotor;
 
+  public double Extend = getPreference("extend", CoralIntakeConstants.Extend);
+  public double Retract = getPreference("retract", CoralIntakeConstants.Retract);
+  public double Intake = getPreference("intake", CoralIntakeConstants.Intake);
+  public double Outtake = getPreference("outtake", CoralIntakeConstants.Outtake);
+
   /** Creates a new IntakeSubsystem. */
   public CoralIntakeSubsystem() {
 
-//    intakeRotationMotor = new TalonFX(Constants.CoralIntakeConstants.intakeRotationMotorCanId);
-//    frontWheelsMotor = new TalonFX(Constants.CoralIntakeConstants.frontWheelsMotorCanId);
-//    sideWheelsMotor = new TalonFX(CoralIntakeConstants.sideWheelsMotorCanId);
-//
-//    intakeRotationMotor.setNeutralMode(NeutralModeValue.Brake);
-//
-//    frontWheelsMotor.setControl(new Follower(Constants.IntakeConstants.frontWheelsMotorCanId,...));
+    intakeRotationMotor = new TalonFX(CoralIntakeConstants.intakeRotationMotorCanId);
+    frontWheelsMotor = new TalonFX(CoralIntakeConstants.frontWheelsMotorCanId);
+    sideWheelsMotor = new TalonFX(CoralIntakeConstants.sideWheelsMotorCanId);
 
-//    sideWheelsMotor.setControl(...);
+    intakeRotationMotor.setNeutralMode(NeutralModeValue.Brake);
+    frontWheelsMotor.setNeutralMode(NeutralModeValue.Brake);
+    sideWheelsMotor.setNeutralMode(NeutralModeValue.Brake);
 
+    reconfigurePid();
+  }
+
+  public void reconfigurePid() {
+
+      final var config = new Slot0Configs();
+      config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+      config.kG = getPreference("gravity", CoralIntakeConstants.kG);
+      config.kS = getPreference("static", CoralIntakeConstants.kS);
+      config.kP = getPreference("proportional", CoralIntakeConstants.kP);
+      config.kI = getPreference("integral", CoralIntakeConstants.kI);
+      config.kD = getPreference("derivative", CoralIntakeConstants.kD);
+
+      intakeRotationMotor.getConfigurator().apply(config);
+  }
+
+  public Command Rotate(double position) {
+
+    return run(() -> {
+
+      final PositionVoltage lift_request = new PositionVoltage(position).withSlot(0);
+      intakeRotationMotor.setControl(lift_request);
+
+    });
+  }
+
+  public Command Spin(double direction) {
+
+    return run(() -> {
+    
+      frontWheelsMotor.set(direction);
+      sideWheelsMotor.set(direction);
+
+    });
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    telemetry();
   }
 
-  public void extend() {
-//    var config = new Slot0Configs();
-//    config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
-//    config.kS = getPreference("..../static", 0.0);
-//    config.kP = getPreference(".../proportional", 0.0);
-//    config.kD = getPreference(".../derivative", 0.0);
-//    intakeRotationMotor.getConfigurator().apply(config);
-//
-//    double extendedPosition = getPreference("extendedPosition", 0.0);
-//    PositionVoltage target = new PositionVoltage(extendedPosition);
-//    intakeRotationMotor.setControl(target);
+  public void telemetry() {
+      SmartDashboard.putNumber("Intake Motor Velocity", intakeRotationMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Position", intakeRotationMotor.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Voltage", intakeRotationMotor.getMotorVoltage().getValueAsDouble());
+
+      SmartDashboard.putNumber("Intake Motor Velocity", frontWheelsMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Position", frontWheelsMotor.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Voltage", frontWheelsMotor.getMotorVoltage().getValueAsDouble());
+
+      SmartDashboard.putNumber("Intake Motor Velocity", sideWheelsMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Position", sideWheelsMotor.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("Intake Motor Voltage", sideWheelsMotor.getMotorVoltage().getValueAsDouble());
   }
 
   public double getPreference(String key, double fallback) {

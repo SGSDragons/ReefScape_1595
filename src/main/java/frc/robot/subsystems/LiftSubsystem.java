@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,11 +17,15 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.spark.SparkMax;
 
 public class LiftSubsystem extends SubsystemBase{
 
     final TalonFX motor;
     TalonFX leftLiftMotor;
+
+    SparkMax rotationMotor;
+    
 
     final BooleanSupplier bottomReached;
 
@@ -28,6 +33,7 @@ public class LiftSubsystem extends SubsystemBase{
         
         TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
         TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, null);
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -57,6 +63,10 @@ public class LiftSubsystem extends SubsystemBase{
         motor.set(0.0);
     }
 
+    public void Rotate(){
+
+    }
+
     public static class LiftPosition {
         
         double setPoint;
@@ -77,6 +87,9 @@ public class LiftSubsystem extends SubsystemBase{
     public final LiftPosition Low  = new LiftPosition("Low", LiftConstants.Low);
     public final LiftPosition Medium = new LiftPosition("Medium", LiftConstants.Medium);
     public final LiftPosition High = new LiftPosition("High", LiftConstants.High);
+
+    public final double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
+    public final double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
 
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
@@ -116,6 +129,7 @@ public class LiftSubsystem extends SubsystemBase{
              motor.set(speed);
          });
     }
+
     
     @Override
     public void periodic() {

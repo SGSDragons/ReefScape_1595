@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.CoralIntakeConstants;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CoralIntakeSubsystem;
 
@@ -28,7 +29,7 @@ public class Climb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    coralIntake.extend();
+    coralIntake.Spin(coralIntake.Retract);
     // Does this need to be delayed so coralIntake has time to clear?
     // First activation will cause Climb to move to the extended position
     climbSubsystem.activate();

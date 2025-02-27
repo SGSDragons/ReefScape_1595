@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -77,10 +79,6 @@ public final class Constants {
       public static final String maxAngularVelocityKey = "Max Angular Velocity";
     }
 
-    public class CoralIntakeConstants {
-      public static final double kS = 0.1;
-    }
-
     public class LiftConstants{
       public static final double kS = 0.5;
       public static final double kG = 0;
@@ -91,6 +89,7 @@ public final class Constants {
 
       public static final int rightLiftMotorCanId = 16;
       public static final int leftLiftMotorCanId = 0;
+      public static final int rotationMotorCanId = 1;
 
       public static final double Ground = 0;
       public static final double Shelf = 13;
@@ -98,9 +97,31 @@ public final class Constants {
       public static final double Medium = 25;
       public static final double High = 35;
 
+      public static final double TopAngle = -0.5;
+      public static final double DefaultAngle = 0;
+
       public double RotationstoInches() {
         return 0;
       }
+    }
+
+    public class CoralIntakeConstants {
+
+      public static final int intakeRotationMotorCanId = 0;
+      public static final int frontWheelsMotorCanId = 0;
+      public static final int sideWheelsMotorCanId = 0;
+
+      public static final double kS = 0.5;
+      public static final double kG = 0;
+      public static final double kP = 0;
+      public static final double kI = 0;
+      public static final double kD = 0;
+
+      public static final double Extend = 1;
+      public static final double Retract = 0;
+      public static final double Intake = 0.5;
+      public static final double Outtake = -0.5;
+
     }
 
     public class ClimbConstants {

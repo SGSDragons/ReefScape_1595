@@ -1,5 +1,19 @@
 {
-  "Persistent Values": {
-    "open": false
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "1595"
+  },
+  "persistent": {
+    "Preferences": {
+      "Lift": {
+        "open": true
+      },
+      "open": true
+    }
+  },
+  "transitory": {
+    "SmartDashboard": {
+      "open": true
+    }
   }
 }
