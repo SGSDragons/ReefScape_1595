@@ -11,7 +11,6 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
@@ -19,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.*;
 import frc.robot.commands.*;
-import frc.robot.commands.Climb.ClimbDirection;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -38,9 +36,6 @@ public class RobotContainer {
   private final LiftSubsystem lift = new LiftSubsystem();
   private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-
-  private final EventLoop testTriggers = new EventLoop();
-  private final EventLoop teleopTriggers = new EventLoop();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -95,11 +90,10 @@ public class RobotContainer {
     driverController.rightBumper().whileTrue(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
     // When holding the right trigger, disable right joystick and make robot always face the reef
-    driverController.rightTrigger(0.0, teleopTriggers).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
-    driverController.a(teleopTriggers).whileTrue(new DynamicReefApproach(swerve, approaches));
+    driverController.rightTrigger(0.0).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
+    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
 
-    driverController.povUp().whileTrue(new Climb(climb, intake, ClimbDirection.UP));
-    driverController.povDown().whileTrue(new Climb(climb, intake, ClimbDirection.DOWN));
+    driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
     //lift.setDefaultCommand(lift.goToGround());
