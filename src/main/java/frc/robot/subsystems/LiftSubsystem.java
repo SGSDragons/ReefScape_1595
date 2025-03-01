@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,23 +29,16 @@ public class LiftSubsystem extends SubsystemBase{
 
     final TalonFX motor;
     TalonFX leftLiftMotor;
-
-    SparkMax rotationMotor;
-    SparkClosedLoopController rotationController;
-    RelativeEncoder rotationEncoder;
     //PIDController pid = new PIDController(0, 0, 0);
 
 
     final BooleanSupplier bottomReached;
+    LiftPosition currentDestination;
 
     public LiftSubsystem() {
         
         TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
         TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
-
-        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, MotorType.kBrushless);
-        SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
-        RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
 
         leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -53,6 +47,7 @@ public class LiftSubsystem extends SubsystemBase{
         // CB: When we wire the limit switch
         //bottomReached = new DigitalInput(0)::get;
         bottomReached = () -> false;
+        double destination = getPreference("Ground", LiftConstants.Ground);
 
         reconfigurePid();
     }
@@ -68,7 +63,6 @@ public class LiftSubsystem extends SubsystemBase{
 
         motor.getConfigurator().apply(config);
     }
-
 
     public void stopLift() {
         motor.set(0.0);
@@ -95,17 +89,11 @@ public class LiftSubsystem extends SubsystemBase{
     public final LiftPosition Medium = new LiftPosition("Medium", LiftConstants.Medium);
     public final LiftPosition High = new LiftPosition("High", LiftConstants.High);
 
-    public final double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
-    public final double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
-
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
-
         return run(() -> {
-            if (position == High){
-                Rotate(TopAngle);
-            }
 
+            currentDestination = position;
             position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
             // create a position closed-loop request, voltage output, slot 0 configs
@@ -118,7 +106,6 @@ public class LiftSubsystem extends SubsystemBase{
     public Command goToGround() {
 
         return run(() -> {
-            Rotate(DeafaltAngle);
             if (motor.getPosition().getValueAsDouble() > 0.2) {
                 // Drive with a PID when far away for max speed.
                 motor.setControl(new PositionVoltage(0));
@@ -135,30 +122,22 @@ public class LiftSubsystem extends SubsystemBase{
 
     public Command move(DoubleSupplier axis) {
          return run(() -> {
-            Rotate(DeafaltAngle);
-             double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
-             motor.set(speed);
+            double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
+            motor.set(speed);
          });
     }
 
-    public void Rotate(double position){
-        rotationController.setReference(position, ControlType.kPosition);
-    }
-    
     @Override
     public void periodic() {
         telemetry();
     }
 
-
     public void telemetry() {
         SmartDashboard.putNumber("Right Motor Velocity", motor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Rotation Motor Position", rotationEncoder.getPosition());
         //SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
     }
-
 
     private static double getPreference(String key, double fallback) {
         return Preferences.getDouble("Lift/" + key, fallback);
@@ -166,5 +145,9 @@ public class LiftSubsystem extends SubsystemBase{
 
     private static void setPreference(String key, double newValue) {
         Preferences.setDouble("Lift/" + key, newValue);
+    }
+
+    public double getLiftPostion(){
+        return motor.getPosition().getValueAsDouble();
     }
 }

@@ -61,8 +61,28 @@ public class CoralIntakeSubsystem extends SubsystemBase {
 
     return run(() -> {
 
-      final PositionVoltage lift_request = new PositionVoltage(position).withSlot(0);
-      intakeRotationMotor.setControl(lift_request);
+      final PositionVoltage rotation_request = new PositionVoltage(position).withSlot(0);
+      intakeRotationMotor.setControl(rotation_request);
+
+    });
+  }
+
+  public Command Extend() {
+
+    return run(() -> {
+
+      final PositionVoltage rotation_request = new PositionVoltage(Extend).withSlot(0);
+      intakeRotationMotor.setControl(rotation_request);
+
+    });
+  }
+
+  public Command Retract() {
+
+    return run(() -> {
+
+      final PositionVoltage rotation_request = new PositionVoltage(Retract).withSlot(0);
+      intakeRotationMotor.setControl(rotation_request);
 
     });
   }

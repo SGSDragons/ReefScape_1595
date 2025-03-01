@@ -109,9 +109,9 @@ public class RobotContainer {
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     lift.setDefaultCommand(lift.move(leftY));
     operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    operatorController.b().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
   }
 
   // Controller behaviors when running in test mode. These are meant for

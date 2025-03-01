@@ -80,6 +80,7 @@ public final class Constants {
     }
 
     public class LiftConstants{
+
       public static final double kS = 0.5;
       public static final double kG = 0;
       public static final double kP = 0;
@@ -89,7 +90,6 @@ public final class Constants {
 
       public static final int rightLiftMotorCanId = 16;
       public static final int leftLiftMotorCanId = 0;
-      public static final int rotationMotorCanId = 1;
 
       public static final double Ground = 0;
       public static final double Shelf = 13;
@@ -97,12 +97,18 @@ public final class Constants {
       public static final double Medium = 25;
       public static final double High = 35;
 
+    }
+
+    public class CarriageConstants {
+
+      public static final int rotationMotorCanId = 1;
+      public static final int directionChannel = 0;
+      public static final int coralMotorCanId = 0;
+
       public static final double TopAngle = -0.5;
       public static final double DefaultAngle = 0;
+      public static final double intakeSpeed = 0.5;
 
-      public double RotationstoInches() {
-        return 0;
-      }
     }
 
     public class CoralIntakeConstants {

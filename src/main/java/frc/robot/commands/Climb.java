@@ -29,7 +29,7 @@ public class Climb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    coralIntake.Spin(coralIntake.Retract);
+    coralIntake.Retract();
     // Does this need to be delayed so coralIntake has time to clear?
     // First activation will cause Climb to move to the extended position
     climbSubsystem.activate();
