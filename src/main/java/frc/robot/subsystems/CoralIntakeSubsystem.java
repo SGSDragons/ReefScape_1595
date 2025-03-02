@@ -15,9 +15,8 @@ import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.CoralIntakeConstants;
-import frc.robot.Constants.LiftConstants;
+import static frc.robot.Constants.HardwareID.CoralIntake.*; 
 
 public class CoralIntakeSubsystem extends SubsystemBase {
 
@@ -33,9 +32,9 @@ public class CoralIntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
   public CoralIntakeSubsystem() {
 
-    intakeRotationMotor = new TalonFX(CoralIntakeConstants.intakeRotationMotorCanId);
-    frontWheelsMotor = new TalonFX(CoralIntakeConstants.frontWheelsMotorCanId);
-    sideWheelsMotor = new TalonFX(CoralIntakeConstants.sideWheelsMotorCanId);
+    intakeRotationMotor = new TalonFX(ExtenderCanId);
+    frontWheelsMotor = new TalonFX(TopWheelCanId);
+    sideWheelsMotor = new TalonFX(LeftWheelsCanId);
 
     intakeRotationMotor.setNeutralMode(NeutralModeValue.Brake);
     frontWheelsMotor.setNeutralMode(NeutralModeValue.Brake);

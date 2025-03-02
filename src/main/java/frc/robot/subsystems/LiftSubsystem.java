@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.CarriageConstants;
+import static frc.robot.Constants.HardwareID.Lift.*;
+
+import frc.robot.Constants.HardwareID;
 import frc.robot.Constants.LiftConstants;
 
 import java.util.function.BooleanSupplier;
@@ -20,17 +22,16 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
 public class LiftSubsystem extends SubsystemBase{
 
     final TalonFX motor;
     TalonFX leftLiftMotor;
-    //PIDController pid = new PIDController(0, 0, 0);
 
     SparkMax rotationMotor;
     SparkClosedLoopController rotationController;
@@ -44,14 +45,14 @@ public class LiftSubsystem extends SubsystemBase{
 
     public LiftSubsystem() {
         
-        TalonFX rightLiftMotor = new TalonFX(LiftConstants.rightLiftMotorCanId);
-        TalonFX leftLiftMotor = new TalonFX(LiftConstants.leftLiftMotorCanId);
+        TalonFX rightLiftMotor = new TalonFX(RightMotorCanId);
+        TalonFX leftLiftMotor = new TalonFX(LeftMotorCanId);
 
-        leftLiftMotor.setControl(new Follower(LiftConstants.rightLiftMotorCanId, true));
+        leftLiftMotor.setControl(new Follower(rightLiftMotor.getDeviceID(), true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
         motor = rightLiftMotor;
 
-        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, MotorType.kBrushless);
+        SparkMax rotationMotor = new SparkMax(FlipperCanId, MotorType.kBrushless);
         SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
         RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
 
