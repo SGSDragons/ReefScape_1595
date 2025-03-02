@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CarriageConstants;
 import frc.robot.Constants.LiftConstants;
 
 import java.util.function.BooleanSupplier;
@@ -31,9 +32,15 @@ public class LiftSubsystem extends SubsystemBase{
     TalonFX leftLiftMotor;
     //PIDController pid = new PIDController(0, 0, 0);
 
+    SparkMax rotationMotor;
+    SparkClosedLoopController rotationController;
+    RelativeEncoder rotationEncoder;
 
     final BooleanSupplier bottomReached;
-    LiftPosition currentDestination;
+    boolean reversed;
+
+    public final double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
+    public final double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
 
     public LiftSubsystem() {
         
@@ -44,10 +51,14 @@ public class LiftSubsystem extends SubsystemBase{
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
         motor = rightLiftMotor;
 
+        SparkMax rotationMotor = new SparkMax(LiftConstants.rotationMotorCanId, MotorType.kBrushless);
+        SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
+        RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
+
         // CB: When we wire the limit switch
         //bottomReached = new DigitalInput(0)::get;
         bottomReached = () -> false;
-        double destination = getPreference("Ground", LiftConstants.Ground);
+        boolean reversed = false;
 
         reconfigurePid();
     }
@@ -92,8 +103,14 @@ public class LiftSubsystem extends SubsystemBase{
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
         return run(() -> {
+            reversed = position == High ? true : false;
 
-            currentDestination = position;
+            if (reversed){
+                setTopAngle();
+            } else{
+                setDeafaultAngle();
+            }
+
             position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
             // create a position closed-loop request, voltage output, slot 0 configs
@@ -117,6 +134,8 @@ public class LiftSubsystem extends SubsystemBase{
                 motor.set(0.0);
                 motor.setPosition(0.0);
             }
+            setDeafaultAngle();
+            reversed = false;
         });
     }
 
@@ -125,6 +144,14 @@ public class LiftSubsystem extends SubsystemBase{
             double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
             motor.set(speed);
          });
+    }
+
+    public void setDeafaultAngle(){
+        rotationController.setReference(DeafaltAngle, ControlType.kPosition);
+    }
+
+    public void setTopAngle(){
+         rotationController.setReference(TopAngle, ControlType.kPosition);
     }
 
     @Override
@@ -136,6 +163,7 @@ public class LiftSubsystem extends SubsystemBase{
         SmartDashboard.putNumber("Right Motor Velocity", motor.getVelocity().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Rotation Motor Position", rotationEncoder.getPosition());
         //SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
     }
 

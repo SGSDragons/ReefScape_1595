@@ -16,74 +16,78 @@ import frc.robot.Constants.LiftConstants;
 
 public class CarriageSubsystem extends SubsystemBase{
 
-    SparkMax rotationMotor;
-    SparkClosedLoopController rotationController;
-    RelativeEncoder rotationEncoder;
-
     SparkMax coralMotor;
     RelativeEncoder coralEncoder;
-    boolean reversed;
+    double invert;
 
     Servo direction;
 
     LiftSubsystem lift;
 
-    public final double TopAngle = getPreference("TopAngle", CarriageConstants.TopAngle);
-    public final double DeafaltAngle = getPreference("DefaultAngle", CarriageConstants.DefaultAngle);
     public final double intakeSpeed = getPreference("IntakeSpeed", CarriageConstants.intakeSpeed);
 
     CarriageSubsystem(){
-
-        SparkMax rotationMotor = new SparkMax(CarriageConstants.rotationMotorCanId, MotorType.kBrushless);
-        SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
-        RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
 
         SparkMax coralMotor = new SparkMax(CarriageConstants.coralMotorCanId, MotorType.kBrushless);
         RelativeEncoder coralEncoder = coralMotor.getEncoder();
         boolean reversed = false;
 
         Servo direction = new Servo(CarriageConstants.directionChannel);
+        direction.set(CarriageConstants.middle);
 
         LiftSubsystem lift = new LiftSubsystem();
     }
 
-    public Command setDeafaultAngle(){
+    public void spinCoralIntake(){
+        double speed = lift.reversed ? intakeSpeed : -intakeSpeed;
+        coralMotor.set(speed);
+    }
 
-        return run(() -> {
-            rotationController.setReference(DeafaltAngle, ControlType.kPosition);
+    public void stopCoralMotor(){
+        coralMotor.set(0);
+    }
+
+    public Command intakeCoral(){
+        return run(() -> {spinCoralIntake();});
+    }
+
+    public Command middle(){
+
+        return run(() -> { 
+            direction.set(CarriageConstants.middle);
+            stopCoralMotor();
         });
     }
 
-    public Command setTopAngle(){
+    public Command pointRight(){
 
         return run(() -> {
-            rotationController.setReference(TopAngle, ControlType.kPosition);
+            invert = lift.reversed ? -1 : 1;
+            direction.set(CarriageConstants.pointRight*invert);
+            if (Math.abs(direction.getPosition() - CarriageConstants.pointRight) < 0.1) {
+                spinCoralIntake();
+            }
         });
     }
 
-    public Command spinCoralIntake(){
+    public Command pointLeft(){
 
         return run(() -> {
-            double speed = reversed ? intakeSpeed : -intakeSpeed;
-            coralMotor.set(speed);
+            invert = lift.reversed ? -1 : 1;
+            direction.set(CarriageConstants.pointLeft*invert);
+            if (Math.abs(direction.getPosition() - CarriageConstants.pointLeft) < 0.1) {
+                spinCoralIntake();
+            }
         });
     }
+
 
     @Override
-    public void periodic(){
-
-        reversed = lift.currentDestination == lift.High ? true : false;
-        if (reversed){
-            setTopAngle();
-        } else{
-            setDeafaultAngle();
-        }
-
+    public void periodic(){;
         telemetry();
     }
 
     public void telemetry(){
-        SmartDashboard.putNumber("Rotation Motor Position", rotationEncoder.getPosition());
         SmartDashboard.putNumber("Rotation Motor Position", coralEncoder.getVelocity());
         SmartDashboard.putNumber("Direction Servo Position", direction.getPosition());
     }

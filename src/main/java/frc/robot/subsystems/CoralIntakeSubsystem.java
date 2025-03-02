@@ -87,12 +87,20 @@ public class CoralIntakeSubsystem extends SubsystemBase {
     });
   }
 
-  public Command Spin(double direction) {
-
+  public Command Intake() {
     return run(() -> {
     
-      frontWheelsMotor.set(direction);
-      sideWheelsMotor.set(direction);
+      frontWheelsMotor.set(Intake);
+      sideWheelsMotor.set(Intake);
+
+    });
+  }
+
+  public Command Outtake() {
+    return run(() -> {
+    
+      frontWheelsMotor.set(Outtake);
+      sideWheelsMotor.set(Outtake);
 
     });
   }
