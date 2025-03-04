@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,54 +36,42 @@ public final class Constants {
   //Hardware IDs for parts on robot (excluding drivetrain).
   public static final class HardwareID {
 
-      public static final int rightLiftMotorCanId = 16; //Lift motors
-      public static final int leftLiftMotorCanId = 0; //Lift motors
+      // All the CANBus and Channel IDs used on the robot. If any of these IDs are repeated,
+      // then things won't work correctly
+      //
+      // Can ID -1 denotes numbers that have yet to be programmed on devices.
+      // 
+      // IDs 3-14 are used by the swerve modules. Do NOT reuse here.
 
-      public static final int ClimberMotorcanId = 15; //Climber motor
+      public static final class Lift {
+        public static final int RightMotorCanId = 16;
+        public static final int LeftMotorCanId = 0;
+        public static final int FlipperCanId = -1;
+      }
 
-      public static final int intakeRotationMotorCANId = 1; //Coral intake motors
-      public static final int frontWheelsMotorCANId = 2; //Coral intake motors
-      public static final int sideWheelsMotorCANId = 3; //Coral intake motors
+      public static final class Carriage {
+        public static final int WheelsMotorCanId = -1; // Wheels that transport a coral
+        public static final int directionServoChannelId = -1; // The PWM port that the servo plugs into 
+      }
+
+      public static final class Climb {
+        public static final int MotorCanId = 15; // Climber motor
+      }
+
+      public static final class CoralIntake {
+          public static final int ExtenderCanId = -1; // The motor that extends and retracts the coral arms
+          public static final int LeftWheelsCanId = -1; // The motor that spins the left-side intake wheels
+          public static final int RightWheelsCanId = -1; // The motor that spins the right-side intake wheels
+          public static final int TopWheelCanId = -1; // The motor that spins the top intake bar  
+      }
   }
 
   public static final class SystemToggles {
     public static final boolean useCompleteAuto = false;
   }
 
-    public static final class AutoConstants { //TO BE TUNED
-         public static final double kMaxSpeedMetersPerSecond = 3;
-         public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-         public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-
-          public static double kPXController = Preferences.getDouble(Keys.auto_kPXKey, 3);
-          public static double kPThetaController = Preferences.getDouble(Keys.auto_kPThetaKey, 4);
-     
-         /* Constraint for the motion profilied robot angle controller */
-         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-             new TrapezoidProfile.Constraints(
-                 kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
-
-     }
-
-     public static final class Keys {
-      // Driving
-      public static final String angle_kPKey = "Angle kP";
-      public static final String drive_kPKey = "Drive kP";
-      public static final String drive_kSKey = "Drive kS";
-      public static final String drive_kVKey = "Drive kV";
-      public static final String drive_kAKey = "Drive kA";
-      public static final String auto_kPXKey = "Auto kP X";
-      public static final String auto_kPThetaKey = "Auto kP Theta";
-      public static final String maxSpeedKey = "Max Speed";
-      public static final String maxAngularVelocityKey = "Max Angular Velocity";
-    }
-
-    public class CoralIntakeConstants {
-      public static final double kS = 0.1;
-    }
-
     public class LiftConstants{
+
       public static final double kS = 0.5;
       public static final double kG = 0;
       public static final double kP = 0;
@@ -89,22 +79,43 @@ public final class Constants {
       public static final double kD = 0;
       public static final double kGravity = 0;
 
-      public static final int rightLiftMotorCanId = 16;
-      public static final int leftLiftMotorCanId = 0;
-
       public static final double Ground = 0;
       public static final double Shelf = 13;
       public static final double Low = 17;
       public static final double Medium = 25;
       public static final double High = 35;
 
-      public double RotationstoInches() {
-        return 0;
-      }
+      public static final double TopAngle = 1;
+      public static final double DefaultAngle = 0;
+
     }
 
-    public class ClimbConstants {
-      public static final int ClimberMotorcanId = 15;
+    public class CarriageConstants {
+
+      public static final int directionChannel = 0;
+      public static final int coralMotorCanId = 0;
+
+      public static final double intakeSpeed = 0.5;
+
+      public static final double pointRight = 0.25;
+      public static final double middle = 0.5;
+      public static final double pointLeft = 0.75;
+
+    }
+
+    public class CoralIntakeConstants {
+
+      public static final double kS = 0.5;
+      public static final double kG = 0;
+      public static final double kP = 0;
+      public static final double kI = 0;
+      public static final double kD = 0;
+
+      public static final double Extend = 1;
+      public static final double Retract = 0;
+      public static final double Intake = 0.5;
+      public static final double Outtake = -0.5;
+
     }
 
     public class Reefscape {

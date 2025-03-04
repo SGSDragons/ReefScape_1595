@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // import frc.lib.utilities.Constants.HardwareID;
 // import frc.lib.utilities.Constants.Keys;
 // import frc.robot.Constants.Keys;
-import frc.robot.Constants.ClimbConstants;
+import frc.robot.Constants.HardwareID;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -48,7 +48,7 @@ public class ClimbSubsystem extends SubsystemBase{
 
     public ClimbSubsystem() {
         
-        climbMotor = new TalonFX(ClimbConstants.ClimberMotorcanId);
+        climbMotor = new TalonFX(HardwareID.Climb.MotorCanId);
         climbMotor.setNeutralMode(NeutralModeValue.Brake);
         
     }
@@ -61,7 +61,7 @@ public class ClimbSubsystem extends SubsystemBase{
             targetPosition = retractedPosition;
         }
 
-        PositionVoltage target = new PositionVoltage(extendedPosition);
+        PositionVoltage target = new PositionVoltage(targetPosition);
         climbMotor.setControl(target);
     }
 

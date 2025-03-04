@@ -6,6 +6,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.CoralIntakeConstants;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CoralIntakeSubsystem;
 
@@ -14,32 +16,20 @@ public class Climb extends Command {
 
   private final ClimbSubsystem climbSubsystem;
   private final CoralIntakeSubsystem coralIntake;
-  public ClimbDirection direction;
+  CommandXboxController climbControl;
 
-  public static enum ClimbDirection {
-    UP(0.0),
-    DOWN(0.0),
-    ;
-
-    double setpoint;
-    ClimbDirection(double setpoint) {
-      this.setpoint = setpoint;
-    }
-  }
-
-  public Climb(ClimbSubsystem climbSubsystem, CoralIntakeSubsystem coralIntake, ClimbDirection direction) {
+  public Climb(ClimbSubsystem climbSubsystem, CoralIntakeSubsystem coralIntake, CommandXboxController climbControl) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.climbSubsystem = climbSubsystem;
     this.coralIntake = coralIntake;
+    this.climbControl = climbControl;
     addRequirements(climbSubsystem, coralIntake);
-
-    this.direction = direction;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    coralIntake.extend();
+    coralIntake.Retract();
     // Does this need to be delayed so coralIntake has time to clear?
     // First activation will cause Climb to move to the extended position
     climbSubsystem.activate();
@@ -48,7 +38,7 @@ public class Climb extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (climbSubsystem.hasExtended() && true /* TODO: require a button be pressed */) {
+    if (climbSubsystem.hasExtended() && climbControl.povUp().getAsBoolean()) {
       // Second activation will cause Climb to move to the retracted position
       climbSubsystem.activate();
     }
