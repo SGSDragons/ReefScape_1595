@@ -86,22 +86,14 @@ public class CoralIntakeSubsystem extends SubsystemBase {
     });
   }
 
-  public Command Intake() {
-    return run(() -> {
-    
-      frontWheelsMotor.set(Intake);
-      sideWheelsMotor.set(Intake);
-
-    });
+  public void Intake() {  
+    frontWheelsMotor.set(Intake);
+    sideWheelsMotor.set(Intake);
   }
 
-  public Command Outtake() {
-    return run(() -> {
-    
-      frontWheelsMotor.set(Outtake);
-      sideWheelsMotor.set(Outtake);
-
-    });
+  public void Outtake() {
+    frontWheelsMotor.set(Outtake);
+    sideWheelsMotor.set(Outtake);
   }
 
   @Override

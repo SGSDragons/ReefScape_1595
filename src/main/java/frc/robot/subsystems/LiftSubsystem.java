@@ -46,20 +46,20 @@ public class LiftSubsystem extends SubsystemBase{
     public LiftSubsystem() {
         
         TalonFX rightLiftMotor = new TalonFX(RightMotorCanId);
-        TalonFX leftLiftMotor = new TalonFX(LeftMotorCanId);
+        leftLiftMotor = new TalonFX(LeftMotorCanId);
 
         leftLiftMotor.setControl(new Follower(rightLiftMotor.getDeviceID(), true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
         motor = rightLiftMotor;
 
-        SparkMax rotationMotor = new SparkMax(FlipperCanId, MotorType.kBrushless);
-        SparkClosedLoopController rotationController = rotationMotor.getClosedLoopController();
-        RelativeEncoder rotationEncoder = rotationMotor.getEncoder();
+        rotationMotor = new SparkMax(FlipperCanId, MotorType.kBrushless);
+        rotationController = rotationMotor.getClosedLoopController();
+        rotationEncoder = rotationMotor.getEncoder();
 
         // CB: When we wire the limit switch
         //bottomReached = new DigitalInput(0)::get;
         bottomReached = () -> false;
-        boolean reversed = false;
+        reversed = false;
 
         reconfigurePid();
     }
@@ -144,6 +144,7 @@ public class LiftSubsystem extends SubsystemBase{
          return run(() -> {
             double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
             motor.set(speed);
+            reversed = false;
          });
     }
 

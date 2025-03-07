@@ -18,7 +18,6 @@ public class CarriageSubsystem extends SubsystemBase{
 
     SparkMax coralMotor;
     RelativeEncoder coralEncoder;
-    double invert;
 
     Servo direction;
 
@@ -26,16 +25,21 @@ public class CarriageSubsystem extends SubsystemBase{
 
     public final double intakeSpeed = getPreference("IntakeSpeed", CarriageConstants.intakeSpeed);
 
-    CarriageSubsystem(){
+    public CarriageSubsystem(){
 
-        SparkMax coralMotor = new SparkMax(CarriageConstants.coralMotorCanId, MotorType.kBrushless);
-        RelativeEncoder coralEncoder = coralMotor.getEncoder();
-        boolean reversed = false;
+        coralMotor = new SparkMax(CarriageConstants.coralMotorCanId, MotorType.kBrushless);
+        coralEncoder = coralMotor.getEncoder();
 
-        Servo direction = new Servo(CarriageConstants.directionChannel);
+        direction = new Servo(CarriageConstants.directionChannel);
         direction.set(CarriageConstants.middle);
 
-        LiftSubsystem lift = new LiftSubsystem();
+        lift = new LiftSubsystem();
+    }
+
+    public Command testSparkMax(double power){
+        return run(() -> {
+            coralMotor.set(power);
+        });
     }
 
     public void spinCoralIntake(){
@@ -47,22 +51,18 @@ public class CarriageSubsystem extends SubsystemBase{
         coralMotor.set(0);
     }
 
-    public Command intakeCoral(){
-        return run(() -> {spinCoralIntake();});
-    }
-
     public Command middle(){
 
         return run(() -> { 
             direction.set(CarriageConstants.middle);
-            stopCoralMotor();
+            stopCoralMotor(); 
         });
     }
 
     public Command pointRight(){
 
         return run(() -> {
-            invert = lift.reversed ? -1 : 1;
+            double invert = lift.reversed ? -1 : 1;
             direction.set(CarriageConstants.pointRight*invert);
             if (Math.abs(direction.getPosition() - CarriageConstants.pointRight) < 0.1) {
                 spinCoralIntake();
@@ -73,7 +73,7 @@ public class CarriageSubsystem extends SubsystemBase{
     public Command pointLeft(){
 
         return run(() -> {
-            invert = lift.reversed ? -1 : 1;
+            double invert = lift.reversed ? -1 : 1;
             direction.set(CarriageConstants.pointLeft*invert);
             if (Math.abs(direction.getPosition() - CarriageConstants.pointLeft) < 0.1) {
                 spinCoralIntake();

@@ -33,9 +33,10 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
   private final ApproachFactory approaches;
 
-  private final LiftSubsystem lift = new LiftSubsystem();
+  //private final LiftSubsystem lift = new LiftSubsystem();
   private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
+  //private final CarriageSubsystem carriage = new CarriageSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -100,12 +101,12 @@ public class RobotContainer {
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    lift.setDefaultCommand(lift.move(leftY));
-    operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    // DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
+    // lift.setDefaultCommand(lift.move(leftY));
+    // operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
   }
 
   // Controller behaviors when running in test mode. These are meant for
@@ -117,16 +118,18 @@ public class RobotContainer {
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
 
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
-    lift.setDefaultCommand(lift.move(leftY));
-    climb.setDefaultCommand(climb.drive(() -> driverController.getRawAxis(Axis.kRightY.value)));
+    // lift.setDefaultCommand(lift.move(leftY));
+    // climb.setDefaultCommand(climb.drive(() -> driverController.getRawAxis(Axis.kRightY.value)));
 
     // Reread Lift PID constants from preferences
-    operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
+    //operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
     swerve.setMotorBrake(false);
+
+    //carriage.setDefaultCommand(carriage.testSparkMax(leftY.getAsDouble()));
   }
 
   /**
