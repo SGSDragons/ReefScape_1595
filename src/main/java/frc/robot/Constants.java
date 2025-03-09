@@ -64,6 +64,10 @@ public final class Constants {
           public static final int RightWheelsCanId = -1; // The motor that spins the right-side intake wheels
           public static final int TopWheelCanId = -1; // The motor that spins the top intake bar  
       }
+
+      public static final class Algae {
+        public static final int FourBarCanId = 18;
+      }
   }
 
   public static final class SystemToggles {
@@ -115,6 +119,22 @@ public final class Constants {
       public static final double Retract = 0;
       public static final double Intake = 0.5;
       public static final double Outtake = -0.5;
+
+    }
+
+    public class AlgaeContants {
+
+      public static final double kS = 0.5;
+      public static final double kG = 0;
+      public static final double kP = 0;
+      public static final double kI = 0;
+      public static final double kD = 0;
+
+      public static final double Extend = 1;
+      public static final double Retract = 0;
+
+      //below 2.75 to stop motor
+      public static final double CurrentLimit = 3;
 
     }
 
