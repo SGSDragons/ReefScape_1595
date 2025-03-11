@@ -11,6 +11,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,6 +26,7 @@ import java.util.function.DoubleSupplier;
 public class AlgaeSubsystem extends SubsystemBase {
 
   TalonFX FourBarMotor;
+  SparkMax AlgaeSpin;
 
   public double Extend = getPreference("extend", AlgaeContants.Extend);
   public double Retract = getPreference("retract", AlgaeContants.Retract);
@@ -50,16 +52,26 @@ public class AlgaeSubsystem extends SubsystemBase {
       FourBarMotor.getConfigurator().apply(config);
   }
 
-  public Command move(DoubleSupplier speed) {
+  public Command rotate(DoubleSupplier speed) {
     return run(() -> { 
-        FourBarMotor.set(speed.getAsDouble()/10);
+        FourBarMotor.set(speed.getAsDouble()/5);
         //stop();
     });
+  }
+
+  public Command spin(DoubleSupplier speed){
+    return run(() -> { 
+      AlgaeSpin.set(speed.getAsDouble());
+      //stop();
+  });
   }
 
   public void stop() {
     var talonFXConfigurator = FourBarMotor.getConfigurator();
     var limitConfigs = new CurrentLimitsConfigs();
+
+    FourBarMotor.getSupplyVoltage();
+    FourBarMotor.getMotorVoltage();
 
     // enable stator current limit
     //limitConfigs.StatorCurrentLimit = getPreference("currentlimit", AlgaeContants.CurrentLimit);
@@ -67,16 +79,6 @@ public class AlgaeSubsystem extends SubsystemBase {
     limitConfigs.StatorCurrentLimitEnable = true;
 
     talonFXConfigurator.apply(limitConfigs);
-  } 
-
-  public Command Rotate(double position) {
-
-    return run(() -> {
-
-      final PositionVoltage rotation_request = new PositionVoltage(position).withSlot(0);
-      FourBarMotor.setControl(rotation_request);
-
-    });
   }
 
   public Command Extend() {

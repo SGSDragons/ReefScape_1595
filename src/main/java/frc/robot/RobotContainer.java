@@ -122,7 +122,7 @@ public class RobotContainer {
 
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
     lift.setDefaultCommand(lift.move(leftY));
-    climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
     //Reread Lift PID constants from preferences
     operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
@@ -132,7 +132,8 @@ public class RobotContainer {
 
     swerve.setMotorBrake(false);
 
-    algae.setDefaultCommand(algae.move(rightY));
+    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
 
     operatorController.leftTrigger().whileTrue(algae.Extend());
 

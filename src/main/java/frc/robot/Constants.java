@@ -130,7 +130,7 @@ public final class Constants {
       public static final double kI = 0;
       public static final double kD = 0;
 
-      public static final double Extend = 1;
+      public static final double Extend = -6.14;
       public static final double Retract = 0;
 
       //below 2.75 to stop motor
