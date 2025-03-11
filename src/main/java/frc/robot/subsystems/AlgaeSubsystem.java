@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -16,9 +15,9 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.AlgaeContants;
-import frc.robot.Constants.CoralIntakeConstants;
 import static frc.robot.Constants.HardwareID.Algae.*;
 
 import java.util.function.DoubleSupplier; 
@@ -35,6 +34,7 @@ public class AlgaeSubsystem extends SubsystemBase {
 
     FourBarMotor = new TalonFX(FourBarCanId);
     FourBarMotor.setNeutralMode(NeutralModeValue.Brake);
+    FourBarMotor.setPosition(0.0);
 
     reconfigurePid();
   }
@@ -42,7 +42,6 @@ public class AlgaeSubsystem extends SubsystemBase {
   public void reconfigurePid() {
 
       final var config = new Slot0Configs();
-      config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       config.kG = getPreference("gravity", AlgaeContants.kG);
       config.kS = getPreference("static", AlgaeContants.kS);
       config.kP = getPreference("proportional", AlgaeContants.kP);
@@ -54,8 +53,8 @@ public class AlgaeSubsystem extends SubsystemBase {
 
   public Command rotate(DoubleSupplier speed) {
     return run(() -> { 
-        FourBarMotor.set(speed.getAsDouble()/5);
-        //stop();
+        SmartDashboard.putNumber("Algae Target Velocity", speed.getAsDouble() * getPreference("speed", 0.5));
+          FourBarMotor.set(speed.getAsDouble() * getPreference("speed", 0.5));
     });
   }
 
@@ -67,38 +66,39 @@ public class AlgaeSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    var talonFXConfigurator = FourBarMotor.getConfigurator();
-    var limitConfigs = new CurrentLimitsConfigs();
+    // var talonFXConfigurator = FourBarMotor.getConfigurator();
+    // var limitConfigs = new CurrentLimitsConfigs();
 
-    FourBarMotor.getSupplyVoltage();
-    FourBarMotor.getMotorVoltage();
+    // FourBarMotor.getSupplyVoltage();
+    // FourBarMotor.getMotorVoltage();
 
-    // enable stator current limit
-    //limitConfigs.StatorCurrentLimit = getPreference("currentlimit", AlgaeContants.CurrentLimit);
-    limitConfigs.StatorCurrentLimit = AlgaeContants.CurrentLimit;
-    limitConfigs.StatorCurrentLimitEnable = true;
+    // // enable stator current limit
+    // //limitConfigs.StatorCurrentLimit = getPreference("currentlimit", AlgaeContants.CurrentLimit);
+    // limitConfigs.StatorCurrentLimit = AlgaeContants.CurrentLimit;
+    // limitConfigs.StatorCurrentLimitEnable = true;
 
-    talonFXConfigurator.apply(limitConfigs);
+    // talonFXConfigurator.apply(limitConfigs);
+  }
+
+  private Command setArmPosition(final double target) {
+    // run the arm to a position. stop the command when within 0.2 rotations, which
+    // kills the power and sets the motor to brake.
+    final PositionVoltage request = new PositionVoltage(target).withSlot(0);
+    return new FunctionalCommand(
+      () -> {FourBarMotor.setControl(request);}, 
+      () -> {},
+      (interrupted) -> {FourBarMotor.set(0.0);},
+      () -> 0.2 >  Math.abs(FourBarMotor.getPosition().getValueAsDouble() - target),
+      this
+    );
   }
 
   public Command Extend() {
-
-    return run(() -> {
-
-      final PositionVoltage rotation_request = new PositionVoltage(Extend).withSlot(0);
-      FourBarMotor.setControl(rotation_request);
-
-    });
+    return setArmPosition(Extend);
   }
 
   public Command Retract() {
-
-    return run(() -> {
-
-      final PositionVoltage rotation_request = new PositionVoltage(Retract).withSlot(0);
-      FourBarMotor.setControl(rotation_request);
-
-    });
+    return setArmPosition(0.0);
   }
 
   @Override

@@ -31,7 +31,6 @@ import com.revrobotics.spark.SparkMax;
 public class LiftSubsystem extends SubsystemBase{
 
     final TalonFX motor;
-    TalonFX leftLiftMotor;
 
     SparkMax rotationMotor;
     SparkClosedLoopController rotationController;
@@ -46,7 +45,7 @@ public class LiftSubsystem extends SubsystemBase{
     public LiftSubsystem() {
         
         TalonFX rightLiftMotor = new TalonFX(RightMotorCanId);
-        leftLiftMotor = new TalonFX(LeftMotorCanId);
+        TalonFX leftLiftMotor = new TalonFX(LeftMotorCanId);
 
         leftLiftMotor.setControl(new Follower(rightLiftMotor.getDeviceID(), true));
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -166,7 +165,6 @@ public class LiftSubsystem extends SubsystemBase{
         SmartDashboard.putNumber("Right Motor Position", motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Right Motor Voltage", motor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Rotation Motor Position", rotationEncoder.getPosition());
-        //SmartDashboard.putNumber("Left Motor Voltage", leftLiftMotor.getMotorVoltage().getValueAsDouble());
     }
 
     private static double getPreference(String key, double fallback) {

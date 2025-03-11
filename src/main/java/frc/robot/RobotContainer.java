@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
-import frc.robot.Constants.HardwareID.Algae;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.*;
@@ -125,7 +124,6 @@ public class RobotContainer {
     //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
     //Reread Lift PID constants from preferences
-    operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
@@ -135,7 +133,9 @@ public class RobotContainer {
     algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
-    operatorController.leftTrigger().whileTrue(algae.Extend());
+    operatorController.leftTrigger().onTrue(algae.Extend());
+    operatorController.leftTrigger().onFalse(algae.Retract());
+    operatorController.y().onTrue(lift.runOnce(algae::reconfigurePid));
 
     // carriage.setDefaultCommand(carriage.testSparkMax(leftY.getAsDouble()));
   }
