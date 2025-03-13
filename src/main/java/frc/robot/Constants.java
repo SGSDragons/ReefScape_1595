@@ -47,6 +47,7 @@ public final class Constants {
         public static final int RightMotorCanId = 16;
         public static final int LeftMotorCanId = 0;
         public static final int FlipperCanId = -1;
+        public static final int WireSpoolCanId = -1;
 
         public static final int LimitSwitchChannelId = 0;
       }
@@ -95,6 +96,8 @@ public final class Constants {
 
       public static final double TopAngle = 1;
       public static final double DefaultAngle = 0;
+
+      public static final double WiretoLiftRatio = 1;
 
     }
 
