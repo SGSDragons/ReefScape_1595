@@ -34,7 +34,7 @@ public class RobotContainer {
   private final ApproachFactory approaches;
 
   private final LiftSubsystem lift = new LiftSubsystem();
-  private final ClimbSubsystem climb = new ClimbSubsystem();
+  // private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
   //private final CarriageSubsystem carriage = new CarriageSubsystem();
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
@@ -103,7 +103,6 @@ public class RobotContainer {
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    lift.setDefaultCommand(lift.move(leftY));
     operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
     operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
@@ -135,7 +134,7 @@ public class RobotContainer {
 
     operatorController.leftTrigger().onTrue(algae.Extend());
     operatorController.leftTrigger().onFalse(algae.Retract());
-    operatorController.y().onTrue(lift.runOnce(algae::reconfigurePid));
+    operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     // carriage.setDefaultCommand(carriage.testSparkMax(leftY.getAsDouble()));
   }

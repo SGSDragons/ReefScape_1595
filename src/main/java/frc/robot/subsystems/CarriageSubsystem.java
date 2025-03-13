@@ -25,7 +25,7 @@
 
 //     public final double intakeSpeed = getPreference("IntakeSpeed", CarriageConstants.intakeSpeed);
 
-//     public CarriageSubsystem(){
+//     public CarriageSubsystem(LiftSubsystem lift){
 
 //         coralMotor = new SparkMax(CarriageConstants.coralMotorCanId, MotorType.kBrushless);
 //         coralEncoder = coralMotor.getEncoder();
@@ -33,7 +33,6 @@
 //         direction = new Servo(CarriageConstants.directionChannel);
 //         direction.set(CarriageConstants.middle);
 
-//         lift = new LiftSubsystem();
 //     }
 
 //     public Command testSparkMax(double power){

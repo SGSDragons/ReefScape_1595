@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
@@ -41,6 +42,7 @@ public class LiftSubsystem extends SubsystemBase{
 
     public final double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
     public final double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
+    public final double TopLimit  = getPreference("DefaultAngle", LiftConstants.TopLimit);
 
     public LiftSubsystem() {
         
@@ -56,8 +58,7 @@ public class LiftSubsystem extends SubsystemBase{
         rotationEncoder = rotationMotor.getEncoder();
 
         // CB: When we wire the limit switch
-        //bottomReached = new DigitalInput(0)::get;
-        bottomReached = () -> false;
+        bottomReached = new DigitalInput(HardwareID.Lift.LimitSwitchChannelId)::get;
         reversed = false;
 
         reconfigurePid();
@@ -73,10 +74,6 @@ public class LiftSubsystem extends SubsystemBase{
         config.kD = getPreference("derivative", LiftConstants.kD);
 
         motor.getConfigurator().apply(config);
-    }
-
-    public void stopLift() {
-        motor.set(0.0);
     }
 
     public static class LiftPosition {
@@ -103,29 +100,41 @@ public class LiftSubsystem extends SubsystemBase{
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
         return run(() -> {
-            reversed = position == High ? true : false;
-
-            if (reversed){
-                setTopAngle();
-            } else{
-                setDeafaultAngle();
+            if (motor.getPosition().getValueAsDouble() >= TopLimit){
+                StopLift();
             }
+            else {
+                reversed = position == High ? true : false;
 
-            position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
+                if (reversed){
+                    setTopAngle();
+                } else{
+                    setDefaultAngle();
+                }
 
-            // create a position closed-loop request, voltage output, slot 0 configs
-            final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
-            // set position to 10 rotations
-            motor.setControl(lift_request);
+                position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
+
+                if (0.1 < Math.abs(motor.getPosition().getValueAsDouble() - position.setPoint)) {
+                    // create a position closed-loop request, voltage output, slot 0 configs
+                    final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
+                    // set position to 10 rotations
+                    motor.setControl(lift_request);
+                } else {
+                    // Close enough
+                    motor.set(0.0);
+                }
+            }
         });
     }
 
     public Command goToGround() {
+        PositionVoltage groundPosition = new PositionVoltage(0).withSlot(0);
 
-        return run(() -> {
-            if (motor.getPosition().getValueAsDouble() > 0.2) {
+        return runEnd(
+            () -> {
+            if (motor.getPosition().getValueAsDouble() > 0.4) {
                 // Drive with a PID when far away for max speed.
-                motor.setControl(new PositionVoltage(0));
+                motor.setControl(groundPosition);
             } else if (!bottomReached.getAsBoolean()) {
                 // Drive slowly until the limit switch is not reached
                 motor.set(-0.1);
@@ -134,20 +143,39 @@ public class LiftSubsystem extends SubsystemBase{
                 motor.set(0.0);
                 motor.setPosition(0.0);
             }
-            setDeafaultAngle();
+            SmartDashboard.putBoolean("Running To Ground", true);
+            setDefaultAngle();
             reversed = false;
-        });
+        },
+        () -> SmartDashboard.putBoolean("Running To Ground", false));
     }
 
     public Command move(DoubleSupplier axis) {
          return run(() -> {
-            double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2)/4;
-            motor.set(speed);
-            reversed = false;
+            if (motor.getPosition().getValueAsDouble() >= TopLimit && axis.getAsDouble() > 0){
+                StopLift();
+            }
+            else{
+                double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2);
+                if (speed < 0 && bottomReached.getAsBoolean()) {
+                    speed = 0.0;
+                    motor.setPosition(0.0);
+                }
+                motor.set(speed);
+                reversed = false;
+            }
          });
     }
 
-    public void setDeafaultAngle(){
+    public void StopLift(){
+        motor.set(0.0);
+    }
+
+    public void ReverseLift() {
+        motor.set(-0.1);
+    }
+
+    public void setDefaultAngle(){
         rotationController.setReference(DeafaltAngle, ControlType.kPosition);
     }
 

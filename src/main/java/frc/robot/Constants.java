@@ -47,6 +47,8 @@ public final class Constants {
         public static final int RightMotorCanId = 16;
         public static final int LeftMotorCanId = 0;
         public static final int FlipperCanId = -1;
+
+        public static final int LimitSwitchChannelId = 0;
       }
 
       public static final class Carriage {
@@ -76,7 +78,7 @@ public final class Constants {
 
     public class LiftConstants{
 
-      public static final double kS = 0.5;
+      public static final double kS = 0;
       public static final double kG = 0;
       public static final double kP = 0;
       public static final double kI = 0;
@@ -85,9 +87,11 @@ public final class Constants {
 
       public static final double Ground = 0;
       public static final double Shelf = 13;
-      public static final double Low = 17;
+      public static final double Low = 31.4;
       public static final double Medium = 25;
       public static final double High = 35;
+
+      public static final double TopLimit = 77;
 
       public static final double TopAngle = 1;
       public static final double DefaultAngle = 0;
@@ -126,11 +130,11 @@ public final class Constants {
 
       public static final double kS = 0.5;
       public static final double kG = 0;
-      public static final double kP = 0.6;
+      public static final double kP = 0;
       public static final double kI = 0;
-      public static final double kD = 0.1;
+      public static final double kD = 0;
 
-      public static final double Extend = -9.8;
+      public static final double Extend = -6.14;
       public static final double Retract = 0;
 
       //below 2.75 to stop motor
