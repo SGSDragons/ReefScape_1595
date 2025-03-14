@@ -58,7 +58,8 @@ public class LiftSubsystem extends SubsystemBase{
         rotationEncoder = rotationMotor.getEncoder();
 
         // CB: When we wire the limit switch
-        bottomReached = new DigitalInput(HardwareID.Lift.LimitSwitchChannelId)::get;
+        DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
+        bottomReached = () -> !limit.get();
         reversed = false;
 
         reconfigurePid();
