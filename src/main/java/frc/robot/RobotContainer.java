@@ -201,7 +201,7 @@ public Command getAutonomousCommand() {
     private Instant limit;
     @Override
     public void initialize() {
-      limit = Instant.now().plusSeconds(1);
+      limit = Instant.now().plusSeconds(5);
     }
 
     @Override
@@ -209,7 +209,7 @@ public Command getAutonomousCommand() {
       if (Instant.now().isAfter(limit)) {
         swerve.drive(Translation2d.kZero, 0.0, false);
       } else {
-        swerve.drive(new Translation2d(1.0, 0.0), 0.0, false);
+        swerve.drive(new Translation2d(0.2, 0.0), 0.0, false);
       }
     }
 
