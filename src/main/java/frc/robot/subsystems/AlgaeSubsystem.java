@@ -54,7 +54,7 @@ public class AlgaeSubsystem extends SubsystemBase {
   public Command rotate(DoubleSupplier speed) {
     return run(() -> { 
         SmartDashboard.putNumber("Algae Target Velocity", speed.getAsDouble() * getPreference("speed", 0.5));
-          FourBarMotor.set(speed.getAsDouble() * getPreference("speed", 0.5));
+        FourBarMotor.set(speed.getAsDouble() * getPreference("speed", 0.5));
     });
   }
 

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.HardwareID.Lift.*;
 
@@ -37,6 +38,10 @@ public class LiftSubsystem extends SubsystemBase{
     SparkClosedLoopController rotationController;
     RelativeEncoder rotationEncoder;
 
+    SparkMax WireSpool;
+    SparkClosedLoopController WireController;
+    RelativeEncoder WireEncoder;
+
     final BooleanSupplier bottomReached;
     boolean reversed;
 
@@ -56,6 +61,10 @@ public class LiftSubsystem extends SubsystemBase{
         rotationMotor = new SparkMax(FlipperCanId, MotorType.kBrushless);
         rotationController = rotationMotor.getClosedLoopController();
         rotationEncoder = rotationMotor.getEncoder();
+
+        WireSpool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
+        WireController = WireSpool.getClosedLoopController();
+        WireEncoder = WireSpool.getEncoder();
 
         // CB: When we wire the limit switch
         DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
@@ -105,14 +114,6 @@ public class LiftSubsystem extends SubsystemBase{
                 StopLift();
             }
             else {
-                reversed = position == High ? true : false;
-
-                if (reversed){
-                    setTopAngle();
-                } else{
-                    setDefaultAngle();
-                }
-
                 position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
                 if (0.1 < Math.abs(motor.getPosition().getValueAsDouble() - position.setPoint)) {
@@ -125,12 +126,18 @@ public class LiftSubsystem extends SubsystemBase{
                     motor.set(0.0);
                 }
             }
+            reversed = position == High ? true : false;
+            if (reversed){
+                setTopAngle();
+            } else{
+                setDefaultAngle();
+            }
+            SpoolFollow();
         });
     }
 
-    public Command goToGround() {
+    public Command gotoGround() {
         PositionVoltage groundPosition = new PositionVoltage(0).withSlot(0);
-
         return runEnd(
             () -> {
             if (motor.getPosition().getValueAsDouble() > 0.4) {
@@ -146,6 +153,7 @@ public class LiftSubsystem extends SubsystemBase{
             }
             SmartDashboard.putBoolean("Running To Ground", true);
             setDefaultAngle();
+            SpoolFollow();
             reversed = false;
         },
         () -> SmartDashboard.putBoolean("Running To Ground", false));
@@ -165,6 +173,8 @@ public class LiftSubsystem extends SubsystemBase{
                 motor.set(speed);
                 reversed = false;
             }
+            setDefaultAngle();
+            SpoolFollow();
          });
     }
 
@@ -172,8 +182,9 @@ public class LiftSubsystem extends SubsystemBase{
         motor.set(0.0);
     }
 
-    public void ReverseLift() {
-        motor.set(-0.1);
+    public void SpoolFollow(){
+        double position = motor.getPosition().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
+        WireController.setReference(position, ControlType.kPosition);
     }
 
     public void setDefaultAngle(){
@@ -202,9 +213,5 @@ public class LiftSubsystem extends SubsystemBase{
 
     private static void setPreference(String key, double newValue) {
         Preferences.setDouble("Lift/" + key, newValue);
-    }
-
-    public double getLiftPostion(){
-        return motor.getPosition().getValueAsDouble();
     }
 }

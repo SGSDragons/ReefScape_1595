@@ -34,9 +34,9 @@ public class RobotContainer {
   private final ApproachFactory approaches;
 
   private final LiftSubsystem lift = new LiftSubsystem();
-  // private final ClimbSubsystem climb = new ClimbSubsystem();
+  //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  //private final CarriageSubsystem carriage = new CarriageSubsystem();
+  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -80,6 +80,10 @@ public class RobotContainer {
   // Controller behaviors when running in teleop mode. These should be tuned
   // for control, precision and speed when playing the game.
   public void engageTeleopMode() {
+
+    DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
+    DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
+
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
@@ -98,27 +102,36 @@ public class RobotContainer {
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    lift.setDefaultCommand(lift.goToGround());
+    lift.setDefaultCommand(lift.gotoGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
     operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+
+    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
+
+    carriage.setDefaultCommand(carriage.middle());
+    operatorController.leftBumper().whileTrue(carriage.shootLeft());
+    operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   // Controller behaviors when running in test mode. These are meant for
   // maximum flexibility (eg. moving the lift/climbers to arbitrary positions)
   public void engageTestMode() {
-    // Clear any bound triggers and create new bindings
-    CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
 
+    // Clear any bound triggers and create new bindings
+    CommandScheduler.getInstance().getActiveButtonLoop().clear();
+
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
+    swerve.setMotorBrake(false);
+
     lift.setDefaultCommand(lift.move(leftY));
     //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
@@ -127,16 +140,16 @@ public class RobotContainer {
     operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
-    swerve.setMotorBrake(false);
-
-    algae.setDefaultCommand(algae.rotate(rightY));
-    //algae.setDefaultCommand(algae.spin(rightY));
-
     operatorController.leftTrigger().onTrue(algae.Extend());
     operatorController.leftTrigger().onFalse(algae.Retract());
     operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    // carriage.setDefaultCommand(carriage.testSparkMax(leftY.getAsDouble()));
+    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
+
+    carriage.setDefaultCommand(carriage.middle());
+    operatorController.leftBumper().whileTrue(carriage.shootLeft());
+    operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   /**
