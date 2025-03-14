@@ -6,12 +6,17 @@ package frc.robot;
 
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.ApproachFactory.Approach;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,10 +38,10 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
   private final ApproachFactory approaches;
 
-  private final LiftSubsystem lift = new LiftSubsystem();
+  // private final LiftSubsystem lift = new LiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  // private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -102,21 +107,21 @@ public class RobotContainer {
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    lift.setDefaultCommand(lift.gotoGround());
+    // lift.setDefaultCommand(lift.gotoGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    // operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
     algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
-    carriage.setDefaultCommand(carriage.middle());
-    operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    operatorController.rightBumper().whileTrue(carriage.shootRight());
+    // carriage.setDefaultCommand(carriage.middle());
+    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
+    // operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   // Controller behaviors when running in test mode. These are meant for
@@ -132,24 +137,24 @@ public class RobotContainer {
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
     swerve.setMotorBrake(false);
 
-    lift.setDefaultCommand(lift.move(leftY));
+    // lift.setDefaultCommand(lift.move(leftY));
     //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
 
     //Reread Lift PID constants from preferences
 
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
     operatorController.leftTrigger().onTrue(algae.Extend());
     operatorController.leftTrigger().onFalse(algae.Retract());
-    operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
+    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
-    carriage.setDefaultCommand(carriage.middle());
-    operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    operatorController.rightBumper().whileTrue(carriage.shootRight());
+    // carriage.setDefaultCommand(carriage.middle());
+    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
+    // operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   /**
@@ -157,11 +162,19 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+public Command getAutonomousCommand() {
+    Approach ideal;
+    switch(DriverStation.getRawAllianceStation()) {
+      case Blue1: ideal = approaches.forAngleDegrees(60);
+      case Blue2: ideal = approaches.forAngleDegrees(0);
+      case Blue3: ideal = approaches.forAngleDegrees(-60);
+
+      case Red1: ideal = approaches.forAngleDegrees(120);
+      case Red2: ideal = approaches.forAngleDegrees(180);
+      default: ideal = approaches.forAngleDegrees(-120);;
+    }
+
     return null;
-    // CB: Do not return a real auto until we've got more safeguards. We don't
-    // want a misclick trigger an auto that causes the robot to make large movements
-//    Command auto = AutoBuilder.buildAuto("Auto_South-3Coral");
-//    return auto;
+    // return AutoBuilder.followPath(ideal.generatePath(Reefscape.getStart().getTranslation(), Translation2d.kZero));
   }
 }
