@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,7 +26,7 @@ import java.util.function.DoubleSupplier;
 public class AlgaeSubsystem extends SubsystemBase {
 
   TalonFX FourBarMotor;
-  SparkMax AlgaeSpin;
+  SparkMax Roller;
 
   public double Extend = getPreference("extend", AlgaeContants.Extend);
   public double Retract = getPreference("retract", AlgaeContants.Retract);
@@ -35,6 +36,8 @@ public class AlgaeSubsystem extends SubsystemBase {
     FourBarMotor = new TalonFX(FourBarCanId);
     FourBarMotor.setNeutralMode(NeutralModeValue.Brake);
     FourBarMotor.setPosition(0.0);
+
+    Roller = new SparkMax(RollerCanId, MotorType.kBrushless);
 
     reconfigurePid();
   }
@@ -58,11 +61,12 @@ public class AlgaeSubsystem extends SubsystemBase {
     });
   }
 
-  public Command spin(DoubleSupplier speed){
-    return run(() -> { 
-      AlgaeSpin.set(speed.getAsDouble());
-      //stop();
-  });
+  public void spinRoller(DoubleSupplier speed){
+    Roller.set(speed.getAsDouble()/2);
+  }
+
+  public Command Roller(DoubleSupplier speed){
+    return run(() -> spinRoller(speed));
   }
 
   public void stop() {
@@ -80,25 +84,25 @@ public class AlgaeSubsystem extends SubsystemBase {
     // talonFXConfigurator.apply(limitConfigs);
   }
 
-  private Command setArmPosition(final double target) {
+  private Command setArmPosition(final double target, DoubleSupplier speed) {
     // run the arm to a position. stop the command when within 0.2 rotations, which
     // kills the power and sets the motor to brake.
     final PositionVoltage request = new PositionVoltage(target).withSlot(0);
     return new FunctionalCommand(
       () -> {FourBarMotor.setControl(request);}, 
-      () -> {},
+      () -> {spinRoller(speed);},
       (interrupted) -> {FourBarMotor.set(0.0);},
       () -> 0.2 >  Math.abs(FourBarMotor.getPosition().getValueAsDouble() - target),
       this
     );
   }
 
-  public Command Extend() {
-    return setArmPosition(Extend);
+  public Command Extend(DoubleSupplier speed) {
+    return setArmPosition(Extend,speed);
   }
 
-  public Command Retract() {
-    return setArmPosition(0.0);
+  public Command Retract(DoubleSupplier speed) {
+    return setArmPosition(0.0,speed);
   }
 
   @Override

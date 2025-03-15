@@ -38,9 +38,9 @@ public class LiftSubsystem extends SubsystemBase{
     SparkClosedLoopController rotationController;
     RelativeEncoder rotationEncoder;
 
-    SparkMax WireSpool;
-    SparkClosedLoopController WireController;
-    RelativeEncoder WireEncoder;
+    SparkMax Spool;
+    SparkClosedLoopController SpoolController;
+    RelativeEncoder SpoolEncoder;
 
     final BooleanSupplier bottomReached;
     boolean reversed;
@@ -62,9 +62,9 @@ public class LiftSubsystem extends SubsystemBase{
         rotationController = rotationMotor.getClosedLoopController();
         rotationEncoder = rotationMotor.getEncoder();
 
-        WireSpool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
-        WireController = WireSpool.getClosedLoopController();
-        WireEncoder = WireSpool.getEncoder();
+        Spool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
+        SpoolController = Spool.getClosedLoopController();
+        SpoolEncoder = Spool.getEncoder();
 
         // CB: When we wire the limit switch
         DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
@@ -111,7 +111,7 @@ public class LiftSubsystem extends SubsystemBase{
 
         return run(() -> {
             if (motor.getPosition().getValueAsDouble() >= TopLimit){
-                StopLift();
+                motor.set(0.0);
             }
             else {
                 position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
@@ -149,6 +149,7 @@ public class LiftSubsystem extends SubsystemBase{
             } else {
                 // It's at the bottom. Stop the motor and rezero the encoder
                 motor.set(0.0);
+                SpoolController.setReference(0, ControlType.kPosition);
                 motor.setPosition(0.0);
             }
             SmartDashboard.putBoolean("Running To Ground", true);
@@ -162,7 +163,7 @@ public class LiftSubsystem extends SubsystemBase{
     public Command move(DoubleSupplier axis) {
          return run(() -> {
             if (motor.getPosition().getValueAsDouble() >= TopLimit && axis.getAsDouble() > 0){
-                StopLift();
+                motor.set(0.0);
             }
             else{
                 double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2);
@@ -178,13 +179,9 @@ public class LiftSubsystem extends SubsystemBase{
          });
     }
 
-    public void StopLift(){
-        motor.set(0.0);
-    }
-
     public void SpoolFollow(){
-        double position = motor.getPosition().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
-        WireController.setReference(position, ControlType.kPosition);
+        double speed = motor.getVelocity().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
+        Spool.set(speed);
     }
 
     public void setDefaultAngle(){

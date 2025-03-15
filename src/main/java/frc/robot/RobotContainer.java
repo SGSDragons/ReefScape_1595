@@ -4,10 +4,13 @@
 
 package frc.robot;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -16,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.ApproachFactory.Approach;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
@@ -117,7 +121,11 @@ public class RobotContainer {
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
-    algae.setDefaultCommand(algae.rotate(rightY));
+    operatorController.leftBumper().onTrue(algae.Extend(rightY));
+    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    algae.setDefaultCommand(algae.Roller(rightY));
+
+    //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
     // carriage.setDefaultCommand(carriage.middle());
@@ -140,18 +148,21 @@ public class RobotContainer {
     swerve.setMotorBrake(false);
 
     // lift.setDefaultCommand(lift.move(leftY));
-    //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    //climb.setDefaultCommand(climb.drive(rightY));
 
     //Reread Lift PID constants from preferences
 
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
-    operatorController.leftTrigger().onTrue(algae.Extend());
-    operatorController.leftTrigger().onFalse(algae.Retract());
+    operatorController.leftBumper().onTrue(algae.Extend(rightY));
+    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    algae.setDefaultCommand(algae.Roller(rightY));
+
+    operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
     // carriage.setDefaultCommand(carriage.middle());
@@ -165,18 +176,60 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-    Approach ideal;
-    switch(DriverStation.getRawAllianceStation()) {
-      case Blue1: ideal = approaches.forAngleDegrees(60);
-      case Blue2: ideal = approaches.forAngleDegrees(0);
-      case Blue3: ideal = approaches.forAngleDegrees(-60);
+    return new DriveForward();
 
-      case Red1: ideal = approaches.forAngleDegrees(120);
-      case Red2: ideal = approaches.forAngleDegrees(180);
-      default: ideal = approaches.forAngleDegrees(-120);;
+//    Approach ideal;
+//    switch(DriverStation.getRawAllianceStation()) {
+//      case Blue1: ideal = approaches.forAngleDegrees(60);
+//      case Blue2: ideal = approaches.forAngleDegrees(0);
+//      case Blue3: ideal = approaches.forAngleDegrees(-60);
+//
+//      case Red1: ideal = approaches.forAngleDegrees(-120);
+//      case Red2: ideal = approaches.forAngleDegrees(180);
+//      default: ideal = approaches.forAngleDegrees(120);;
+//    }
+//
+//    PathPlannerPath path = ideal.generatePath(Reefscape.getStart().getTranslation(), Translation2d.kZero);
+//
+//    List<Pose2d> poses = path.getAllPathPoints().stream()
+//            .map(p -> new Pose2d(p.position, Rotation2d.kZero))
+//            .toList();
+//    swerve.getSwerveDrive().field.getObject("Trajectory").setPoses(poses);
+//    Command follow = AutoBuilder.followPath(path);
+//
+//    return new FunctionalCommand(
+//            () -> { System.err.println("INIT"); follow.initialize(); },
+//            () -> { System.err.println("STEP"); follow.execute(); },
+//            (i) -> { System.err.println("END: " + i); follow.end(i); },
+//            () -> follow.isFinished(),
+//            swerve
+//    );
+  }
+
+  class DriveForward extends Command {
+    private Instant limit;
+    @Override
+    public void initialize() {
+      limit = Instant.now().plusSeconds(5);
     }
 
-    return null;
-    // return AutoBuilder.followPath(ideal.generatePath(Reefscape.getStart().getTranslation(), Translation2d.kZero));
+    @Override
+    public void execute() {
+      if (Instant.now().isAfter(limit)) {
+        swerve.drive(Translation2d.kZero, 0.0, false);
+      } else {
+        swerve.drive(new Translation2d(0.2, 0.0), 0.0, false);
+      }
+    }
+
+    @Override
+    public boolean isFinished() {
+      return Instant.now().isAfter(limit);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      swerve.drive(Translation2d.kZero, 0.0, false);
+    }
   }
 }
