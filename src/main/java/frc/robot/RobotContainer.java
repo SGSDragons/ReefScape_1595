@@ -120,7 +120,11 @@ public class RobotContainer {
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
-    algae.setDefaultCommand(algae.rotate(rightY));
+    operatorController.leftBumper().onTrue(algae.Extend(rightY));
+    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    algae.setDefaultCommand(algae.Roller(rightY));
+
+    //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
     // carriage.setDefaultCommand(carriage.middle());
@@ -142,18 +146,21 @@ public class RobotContainer {
     swerve.setMotorBrake(false);
 
     // lift.setDefaultCommand(lift.move(leftY));
-    //climb.setDefaultCommand(climb.drive(() -> operatorController.getRawAxis(Axis.kRightY.value)));
+    //climb.setDefaultCommand(climb.drive(rightY));
 
     //Reread Lift PID constants from preferences
 
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
-    operatorController.leftTrigger().onTrue(algae.Extend());
-    operatorController.leftTrigger().onFalse(algae.Retract());
+    operatorController.leftBumper().onTrue(algae.Extend(rightY));
+    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    algae.setDefaultCommand(algae.Roller(rightY));
+
+    operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
     // carriage.setDefaultCommand(carriage.middle());

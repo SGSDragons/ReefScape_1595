@@ -70,6 +70,7 @@ public final class Constants {
 
       public static final class Algae {
         public static final int FourBarCanId = 18;
+        public static final int RollerCanId = 1;
       }
   }
 
@@ -133,9 +134,9 @@ public final class Constants {
 
       public static final double kS = 0.5;
       public static final double kG = 0;
-      public static final double kP = 0;
+      public static final double kP = 0.8;
       public static final double kI = 0;
-      public static final double kD = 0;
+      public static final double kD = 0.1;
 
       public static final double Extend = -6.14;
       public static final double Retract = 0;
