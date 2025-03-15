@@ -75,7 +75,7 @@ public class RobotContainer {
   // Thus, Blue axis are inverted.
 
   class DriverSticks {
-    private final double inverter = Reefscape.isRedAlliance() ? 1.0 : -1.0;
+    private final double inverter = -1.0;
     double readAxis(XboxController.Axis axis) {
       return driverController.getRawAxis(axis.value);
     }
