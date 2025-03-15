@@ -80,11 +80,12 @@ public class RobotContainer {
     public double lookX() { return inverter*readAxis(Axis.kRightX); }
     public double lookY() { return inverter*readAxis(Axis.kRightY); }
   }
-  private final DriverSticks driver = new DriverSticks();
+
 
   // Controller behaviors when running in teleop mode. These should be tuned
   // for control, precision and speed when playing the game.
   public void engageTeleopMode() {
+    DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
@@ -127,6 +128,7 @@ public class RobotContainer {
   // Controller behaviors when running in test mode. These are meant for
   // maximum flexibility (eg. moving the lift/climbers to arbitrary positions)
   public void engageTestMode() {
+    DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
