@@ -42,10 +42,10 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
   private final ApproachFactory approaches;
 
-  // private final LiftSubsystem lift = new LiftSubsystem();
+  //private final LiftSubsystem lift = new LiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  // private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  //private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -84,14 +84,16 @@ public class RobotContainer {
     public double lookX() { return inverter*readAxis(Axis.kRightX); }
     public double lookY() { return inverter*readAxis(Axis.kRightY); }
   }
-  private final DriverSticks driver = new DriverSticks();
 
   // Controller behaviors when running in teleop mode. These should be tuned
   // for control, precision and speed when playing the game.
   public void engageTeleopMode() {
+    final DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier righttrigger = () -> operatorController.getRawAxis(Axis.kRightTrigger.value);
+    DoubleSupplier lefttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
@@ -107,7 +109,6 @@ public class RobotContainer {
     // When holding the right trigger, disable right joystick and make robot always face the reef
     driverController.rightTrigger(0.0).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
-
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
@@ -120,13 +121,31 @@ public class RobotContainer {
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
+    //Reread Lift PID constants from preferences
+    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
+    // lift.setDefaultCommand(lift.move(leftY));
+
+    // operatorController.y().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.IntakePosition, leftY));
+
+    // operatorController.povDown().onTrue(lift.runOnce(lift::ConfigureSetpoints));
+    // operatorController.povUp().onTrue(carriage.runOnce(lift::ConfigureSetpoints));
+
+    // operatorController.povDown().whileTrue(lift.rotateDown());
+    // operatorController.povUp().whileTrue(lift.rotateUp());
+
+
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
     algae.setDefaultCommand(algae.Roller(rightY));
+    // operatorController.rightTrigger().whileTrue(algae.Roller(righttrigger));
+    // operatorController.leftTrigger().whileTrue(algae.Roller(lefttrigger));
 
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
+    //carriage.setDefaultCommand(carriage.middle(rightY));
     // carriage.setDefaultCommand(carriage.middle());
     // operatorController.leftBumper().whileTrue(carriage.shootLeft());
     // operatorController.rightBumper().whileTrue(carriage.shootRight());
@@ -135,9 +154,12 @@ public class RobotContainer {
   // Controller behaviors when running in test mode. These are meant for
   // maximum flexibility (eg. moving the lift/climbers to arbitrary positions)
   public void engageTestMode() {
+    final DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
     DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier righttrigger = () -> operatorController.getRawAxis(Axis.kRightTrigger.value);
+    DoubleSupplier lefttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
@@ -145,25 +167,36 @@ public class RobotContainer {
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
     swerve.setMotorBrake(false);
 
-    // lift.setDefaultCommand(lift.move(leftY));
     //climb.setDefaultCommand(climb.drive(rightY));
 
-    //Reread Lift PID constants from preferences
+    //lift.setDefaultCommand(lift.move(leftY));
 
-    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    // //Reread Lift PID constants from preferences
+    // // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
+    // operatorController.y().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    // operatorController.x().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    // operatorController.a().whileTrue(lift.gotoPosition(lift.IntakePosition, leftY));
+
+    // operatorController.povDown().whileTrue(lift.rotateDown());
+    // operatorController.povUp().whileTrue(lift.rotateUp());
+
+    // // operatorController.povDown().onTrue(lift.runOnce(lift::ConfigureSetpoints));
+    // // operatorController.povUp().onTrue(carriage.runOnce(lift::ConfigureSetpoints));
+
+    
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
     algae.setDefaultCommand(algae.Roller(rightY));
+    // operatorController.rightTrigger().whileTrue(algae.Roller(righttrigger));
+    // operatorController.leftTrigger().whileTrue(algae.Roller(lefttrigger));
+    //operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
 
-    operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
-    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
-    // carriage.setDefaultCommand(carriage.middle());
+    //carriage.setDefaultCommand(carriage.middle(rightY));
     // operatorController.leftBumper().whileTrue(carriage.shootLeft());
     // operatorController.rightBumper().whileTrue(carriage.shootRight());
   }

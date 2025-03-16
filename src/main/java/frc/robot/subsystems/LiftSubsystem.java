@@ -38,16 +38,17 @@ public class LiftSubsystem extends SubsystemBase{
     SparkClosedLoopController rotationController;
     RelativeEncoder rotationEncoder;
 
-    SparkMax Spool;
-    SparkClosedLoopController SpoolController;
-    RelativeEncoder SpoolEncoder;
+    // SparkMax Spool;
+    // SparkClosedLoopController SpoolController;
+    // RelativeEncoder SpoolEncoder;
 
     final BooleanSupplier bottomReached;
     boolean reversed;
 
-    public final double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
-    public final double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
-    public final double TopLimit  = getPreference("DefaultAngle", LiftConstants.TopLimit);
+    public double IntakeAngle = getPreference("IntakeAngle", LiftConstants.IntakeAngle);
+    public double TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
+    public double DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
+    public double TopLimit  = getPreference("DefaultAngle", LiftConstants.TopLimit);
 
     public LiftSubsystem() {
         
@@ -62,9 +63,9 @@ public class LiftSubsystem extends SubsystemBase{
         rotationController = rotationMotor.getClosedLoopController();
         rotationEncoder = rotationMotor.getEncoder();
 
-        Spool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
-        SpoolController = Spool.getClosedLoopController();
-        SpoolEncoder = Spool.getEncoder();
+        // Spool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
+        // SpoolController = Spool.getClosedLoopController();
+        // SpoolEncoder = Spool.getEncoder();
 
         // CB: When we wire the limit switch
         DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
@@ -86,6 +87,13 @@ public class LiftSubsystem extends SubsystemBase{
         motor.getConfigurator().apply(config);
     }
 
+    public void ConfigureSetpoints(){
+        IntakeAngle = getPreference("IntakeAngle", LiftConstants.IntakeAngle);
+        TopAngle = getPreference("TopAngle", LiftConstants.TopAngle);
+        DeafaltAngle = getPreference("DefaultAngle", LiftConstants.DefaultAngle);
+        TopLimit  = getPreference("DefaultAngle", LiftConstants.TopLimit);
+    }
+
     public static class LiftPosition {
         
         double setPoint;
@@ -102,10 +110,19 @@ public class LiftSubsystem extends SubsystemBase{
         }
     }
 
+    public final LiftPosition IntakePosition = new LiftPosition("High", LiftConstants.intakeheight);
     public final LiftPosition Shelf = new LiftPosition("Shelf", LiftConstants.Shelf);
     public final LiftPosition Low  = new LiftPosition("Low", LiftConstants.Low);
     public final LiftPosition Medium = new LiftPosition("Medium", LiftConstants.Medium);
     public final LiftPosition High = new LiftPosition("High", LiftConstants.High);
+
+    public Command rotateDown(){
+        return run(() -> rotationMotor.set(-1));
+    }
+
+    public Command rotateUp(){
+        return run(() -> rotationMotor.set(1));
+    }
 
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
@@ -126,13 +143,14 @@ public class LiftSubsystem extends SubsystemBase{
                     motor.set(0.0);
                 }
             }
+            rotationMotor.set(0);
             reversed = position == High ? true : false;
-            if (reversed){
-                setTopAngle();
-            } else{
-                setDefaultAngle();
-            }
-            SpoolFollow();
+            // if (reversed){
+            //     setTopAngle();
+            // } else{
+            //     setDefaultAngle();
+            // }
+            //SpoolFollow();
         });
     }
 
@@ -149,13 +167,14 @@ public class LiftSubsystem extends SubsystemBase{
             } else {
                 // It's at the bottom. Stop the motor and rezero the encoder
                 motor.set(0.0);
-                SpoolController.setReference(0, ControlType.kPosition);
+                //SpoolController.setReference(0, ControlType.kPosition);
                 motor.setPosition(0.0);
             }
             SmartDashboard.putBoolean("Running To Ground", true);
-            setDefaultAngle();
-            SpoolFollow();
+            //setIntakeAngle();
+            //SpoolFollow();
             reversed = false;
+            rotationMotor.set(0);
         },
         () -> SmartDashboard.putBoolean("Running To Ground", false));
     }
@@ -174,14 +193,19 @@ public class LiftSubsystem extends SubsystemBase{
                 motor.set(speed);
                 reversed = false;
             }
-            setDefaultAngle();
-            SpoolFollow();
+            rotationMotor.set(0);
+            //setDefaultAngle();
+            //SpoolFollow();
          });
     }
 
-    public void SpoolFollow(){
-        double speed = motor.getVelocity().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
-        Spool.set(speed);
+    // public void SpoolFollow(){
+    //     double speed = motor.getVelocity().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
+    //     Spool.set(speed);
+    // }
+
+    public void setIntakeAngle(){
+        rotationController.setReference(IntakeAngle, ControlType.kPosition);
     }
 
     public void setDefaultAngle(){

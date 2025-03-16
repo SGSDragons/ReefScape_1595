@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CarriageConstants;
 import frc.robot.Constants.LiftConstants;
+import static frc.robot.Constants.HardwareID.Carriage.*;
 
 public class CarriageSubsystem extends SubsystemBase{
 
@@ -25,38 +26,36 @@ public class CarriageSubsystem extends SubsystemBase{
 
     LiftSubsystem lift;
 
-    public final double intakeSpeed = getPreference("IntakeSpeed", CarriageConstants.intakeSpeed);
+    public double outtakeSpeed = getPreference("IntakeSpeed", CarriageConstants.outtakeSpeed);
+    public double pointRight = getPreference("Right", CarriageConstants.pointRight);
+    public double pointLeft = getPreference("Left", CarriageConstants.pointLeft);
 
-    public CarriageSubsystem(LiftSubsystem lift){
+    public CarriageSubsystem(LiftSubsystem lift) {
 
-        coralMotor = new SparkMax(CarriageConstants.coralMotorCanId, MotorType.kBrushless);
+        coralMotor = new SparkMax(WheelsMotorCanId, MotorType.kBrushless);
         coralEncoder = coralMotor.getEncoder();
 
-        direction = new Servo(CarriageConstants.directionChannel);
+        direction = new Servo(directionServoChannelId);
         direction.set(CarriageConstants.middle);
 
     }
 
-    public Command moveSparkMax(DoubleSupplier power){
-        return run(() -> {
-            coralMotor.set(power.getAsDouble());
-        });
+    public void ConfigureSetpoints(){
+        outtakeSpeed = getPreference("IntakeSpeed", CarriageConstants.outtakeSpeed);
+        pointRight = getPreference("Right", CarriageConstants.pointRight);
+        pointLeft = getPreference("Left", CarriageConstants.pointLeft);
     }
 
     public void spinCoralIntake(){
-        double speed = lift.reversed ? intakeSpeed : -intakeSpeed;
+        double speed = lift.reversed ? outtakeSpeed : -outtakeSpeed;
         coralMotor.set(speed);
     }
 
-    public void stopCoralMotor(){
-        coralMotor.set(0);
-    }
-
-    public Command middle(){
+    public Command middle(DoubleSupplier intakespeed){
 
         return run(() -> { 
             direction.set(CarriageConstants.middle);
-            stopCoralMotor(); 
+            coralMotor.set(intakespeed.getAsDouble());
         });
     }
 
@@ -64,8 +63,8 @@ public class CarriageSubsystem extends SubsystemBase{
 
         return run(() -> {
             double invert = lift.reversed ? -1 : 1;
-            direction.set(CarriageConstants.pointRight*invert);
-            if (Math.abs(direction.getPosition() - CarriageConstants.pointRight) < 0.1) {
+            direction.set(pointRight*invert);
+            if (Math.abs(direction.getPosition() - pointRight) < 0.1) {
                 spinCoralIntake();
             }
         });
@@ -75,8 +74,8 @@ public class CarriageSubsystem extends SubsystemBase{
 
         return run(() -> {
             double invert = lift.reversed ? -1 : 1;
-            direction.set(CarriageConstants.pointLeft*invert);
-            if (Math.abs(direction.getPosition() - CarriageConstants.pointLeft) < 0.1) {
+            direction.set(pointLeft*invert);
+            if (Math.abs(direction.getPosition() - pointLeft) < 0.1) {
                 spinCoralIntake();
             }
         });
@@ -89,7 +88,7 @@ public class CarriageSubsystem extends SubsystemBase{
     }
 
     public void telemetry(){
-        SmartDashboard.putNumber("Rotation Motor Position", coralEncoder.getVelocity());
+        SmartDashboard.putNumber("Coral Motor Velocity", coralEncoder.getVelocity());
         SmartDashboard.putNumber("Direction Servo Position", direction.getPosition());
     }
 

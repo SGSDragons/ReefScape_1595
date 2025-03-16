@@ -45,16 +45,16 @@ public final class Constants {
 
       public static final class Lift {
         public static final int RightMotorCanId = 16;
-        public static final int LeftMotorCanId = 0;
-        public static final int FlipperCanId = -1;
+        public static final int LeftMotorCanId = 2;
+        public static final int FlipperCanId = 20;
         public static final int WireSpoolCanId = -1;
 
         public static final int LimitSwitchChannelId = 0;
       }
 
       public static final class Carriage {
-        public static final int WheelsMotorCanId = -1; // Wheels that transport a coral
-        public static final int directionServoChannelId = -1; // The PWM port that the servo plugs into 
+        public static final int WheelsMotorCanId = 21; // Wheels that transport a coral
+        public static final int directionServoChannelId = 0; // The PWM port that the servo plugs into 
       }
 
       public static final class Climb {
@@ -80,23 +80,25 @@ public final class Constants {
 
     public class LiftConstants{
 
-      public static final double kS = 0;
+      public static final double kS = 0.8;
       public static final double kG = 0;
-      public static final double kP = 0;
+      public static final double kP = 0.5;
       public static final double kI = 0;
       public static final double kD = 0;
       public static final double kGravity = 0;
 
+      public static final double intakeheight = 27.63;
       public static final double Ground = 0;
-      public static final double Shelf = 13;
-      public static final double Low = 31.4;
-      public static final double Medium = 25;
-      public static final double High = 35;
+      public static final double Shelf = 16.6;
+      public static final double Low = 16.03;
+      public static final double Medium = 38.86;
+      public static final double High = 60;
 
       public static final double TopLimit = 77;
 
-      public static final double TopAngle = 1;
+      public static final double TopAngle = 3;
       public static final double DefaultAngle = 0;
+      public static final double IntakeAngle = 1;
 
       public static final double WiretoLiftRatio = 1;
 
@@ -104,14 +106,11 @@ public final class Constants {
 
     public class CarriageConstants {
 
-      public static final int directionChannel = 0;
-      public static final int coralMotorCanId = 0;
+      public static final double outtakeSpeed = 0.5;
 
-      public static final double intakeSpeed = 0.5;
-
-      public static final double pointRight = 0.25;
-      public static final double middle = 0.5;
-      public static final double pointLeft = 0.75;
+      public static final double pointRight = -0.1;
+      public static final double middle = 0;
+      public static final double pointLeft = 0.1;
 
     }
 
