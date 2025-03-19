@@ -87,6 +87,8 @@ public class AlgaeSubsystem extends SubsystemBase {
   private Command setArmPosition(final double target, DoubleSupplier speed) {
     // run the arm to a position. stop the command when within 0.2 rotations, which
     // kills the power and sets the motor to brake.
+    //
+    // Make the roller respond to a speed supplier at all times, even when this command is scheduled
     final PositionVoltage request = new PositionVoltage(target).withSlot(0);
     return new FunctionalCommand(
       () -> {FourBarMotor.setControl(request);}, 
@@ -97,8 +99,8 @@ public class AlgaeSubsystem extends SubsystemBase {
     );
   }
 
-  public Command Extend(DoubleSupplier speed) {
-    return setArmPosition(Extend,speed);
+  public Command  Extend(DoubleSupplier speed) {
+    return setArmPosition(Extend, speed);
   }
 
   public Command Retract(DoubleSupplier speed) {

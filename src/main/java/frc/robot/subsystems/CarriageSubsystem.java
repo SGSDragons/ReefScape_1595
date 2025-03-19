@@ -62,8 +62,8 @@ public class CarriageSubsystem extends SubsystemBase{
     public Command shootRight(){
 
         return run(() -> {
-            double invert = lift.reversed ? -1 : 1;
-            direction.set(pointRight*invert);
+            direction.set(pointRight);
+            // if-statement will run IMMEDIATELY, >>fix<<
             if (Math.abs(direction.getPosition() - pointRight) < 0.1) {
                 spinCoralIntake();
             }
@@ -73,8 +73,8 @@ public class CarriageSubsystem extends SubsystemBase{
     public Command shootLeft(){
 
         return run(() -> {
-            double invert = lift.reversed ? -1 : 1;
-            direction.set(pointLeft*invert);
+            direction.set(pointLeft);
+            // if-statement will run IMMEDIATELY, >>fix<<
             if (Math.abs(direction.getPosition() - pointLeft) < 0.1) {
                 spinCoralIntake();
             }

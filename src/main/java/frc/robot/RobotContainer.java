@@ -42,7 +42,7 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
   private final ApproachFactory approaches;
 
-  // private final LiftSubsystem lift = new LiftSubsystem();
+  private final LiftSubsystem lift = new LiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
   // private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
@@ -110,32 +110,24 @@ public class RobotContainer {
     // When holding the right trigger, disable right joystick and make robot always face the reef
     driverController.rightTrigger(0.0).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
     driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
-
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    // lift.setDefaultCommand(lift.gotoGround());
+    lift.setDefaultCommand(lift.gotoGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    // operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    // operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
+    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
+    operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
 
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
 
     algae.setDefaultCommand(algae.Roller(rightY));
-    //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
+    // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
     // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
-
-    //algae.setDefaultCommand(algae.rotate(rightY));
-    //algae.setDefaultCommand(algae.spin(rightY));
-
-    // carriage.setDefaultCommand(carriage.middle());
-    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    // operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   // Controller behaviors when running in test mode. These are meant for
@@ -154,14 +146,15 @@ public class RobotContainer {
     swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
     swerve.setMotorBrake(false);
 
-    // lift.setDefaultCommand(lift.move(leftY));
+    //lift.setDefaultCommand(lift.move(leftY));
     //climb.setDefaultCommand(climb.drive(rightY));
+    //algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
 
     //Reread Lift PID constants from preferences
 
     // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
     // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
-
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
 
@@ -172,12 +165,11 @@ public class RobotContainer {
     operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    //algae.setDefaultCommand(algae.rotate(rightY));
-    //algae.setDefaultCommand(algae.spin(rightY));
 
     // carriage.setDefaultCommand(carriage.middle());
     // operatorController.leftBumper().whileTrue(carriage.shootLeft());
     // operatorController.rightBumper().whileTrue(carriage.shootRight());
+    // Bumper's are doing 2 separate actions, >>fix<<
   }
 
   /**
