@@ -108,9 +108,9 @@ public final class Constants {
 
       public static final double outtakeSpeed = 0.5;
 
-      public static final double pointRight = -0.1;
-      public static final double middle = 0;
-      public static final double pointLeft = 0.1;
+      public static final double pointRight = 0.0;
+      public static final double middle = 0.5;
+      public static final double pointLeft = 1;
 
     }
 

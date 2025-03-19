@@ -8,19 +8,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import frc.robot.ApproachFactory.Approach;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,16 +30,14 @@ import frc.robot.commands.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  //private final DrivetrainSubsystem drivetrain;
-  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
-  private final ApproachFactory approaches;
 
-  // private final LiftSubsystem lift = new LiftSubsystem();
+  private final DriveSubsystem drive = new DriveSubsystem(); //new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
+  private final LiftSubsystem lift = new LiftSubsystem(); // new MotorizedLiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  // private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -54,8 +46,10 @@ public class RobotContainer {
       DriverStation.refreshData();
     }
 
-    swerve.resetOdometry(Reefscape.getStart());
-    approaches = new ApproachFactory(Reefscape.getReefLocation());
+    if (drive instanceof SwerveSubsystem) {
+      SwerveSubsystem swerve = (SwerveSubsystem) drive;
+      swerve.resetOdometry(Reefscape.getStart());
+    }
   }
 
   //      ______________________________(17, 8)
@@ -102,26 +96,25 @@ public class RobotContainer {
     // Drive relative to the field by default.
     // Left joystick up is away from the driver station. Left joystick left moves left on the field
     // Right joystick up looks away from the driver station. Right joystick left looks left on the field
-    swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
+    drive.setDefaultCommand(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
 
     // When holding the right bumper, change joysticks to drive relative to the Robot (left y is "forward", right x turns left/right)
-    driverController.rightBumper().whileTrue(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
+    driverController.rightBumper().whileTrue(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
     // When holding the right trigger, disable right joystick and make robot always face the reef
-    driverController.rightTrigger(0.0).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
-    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
+    driverController.rightTrigger(0.0).whileTrue(drive.driveTargeting(driver::translateX, driver::translateY));
 
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
     // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    // lift.setDefaultCommand(lift.gotoGround());
+    lift.setDefaultCommand(lift.gotoGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    // operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    // operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    // operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.y().whileTrue(lift.gotoPosition(LiftSubsystem.High, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(LiftSubsystem.Medium, leftY));
+    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.b().whileTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
 
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
@@ -151,25 +144,25 @@ public class RobotContainer {
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
-    swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
-    swerve.setMotorBrake(false);
+    drive.setDefaultCommand(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
-    // lift.setDefaultCommand(lift.move(leftY));
+    lift.setDefaultCommand(lift.move(leftY));
     //climb.setDefaultCommand(climb.drive(rightY));
 
     //Reread Lift PID constants from preferences
 
-    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.x().whileTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
 
-    operatorController.leftBumper().onTrue(algae.Extend(rightY));
-    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    operatorController.b().onTrue(carriage.pointMiddle());
+    operatorController.leftBumper().onTrue(carriage.pointLeft());
+    operatorController.rightBumper().onTrue(carriage.pointRight());
 
     algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
     // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
 
-    operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
+    operatorController.y().onTrue(algae.runOnce(carriage::rereadPreferences));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     //algae.setDefaultCommand(algae.rotate(rightY));
@@ -186,7 +179,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-    return new DriveForward();
+    return null;
 
 //    Approach ideal;
 //    switch(DriverStation.getRawAllianceStation()) {
@@ -216,30 +209,30 @@ public Command getAutonomousCommand() {
 //    );
   }
 
-  class DriveForward extends Command {
-    private Instant limit;
-    @Override
-    public void initialize() {
-      limit = Instant.now().plusSeconds(5);
-    }
+  // class DriveForward extends Command {
+  //   private Instant limit;
+  //   @Override
+  //   public void initialize() {
+  //     limit = Instant.now().plusSeconds(5);
+  //   }
 
-    @Override
-    public void execute() {
-      if (Instant.now().isAfter(limit)) {
-        swerve.drive(Translation2d.kZero, 0.0, false);
-      } else {
-        swerve.drive(new Translation2d(0.2, 0.0), 0.0, false);
-      }
-    }
+  //   @Override
+  //   public void execute() {
+  //     if (Instant.now().isAfter(limit)) {
+  //       drive.drive(Translation2d.kZero, 0.0, false);
+  //     } else {
+  //       drive.drive(new Translation2d(0.2, 0.0), 0.0, false);
+  //     }
+  //   }
 
-    @Override
-    public boolean isFinished() {
-      return Instant.now().isAfter(limit);
-    }
+  //   @Override
+  //   public boolean isFinished() {
+  //     return Instant.now().isAfter(limit);
+  //   }
 
-    @Override
-    public void end(boolean interrupted) {
-      swerve.drive(Translation2d.kZero, 0.0, false);
-    }
-  }
+  //   @Override
+  //   public void end(boolean interrupted) {
+  //     drive.drive(Translation2d.kZero, 0.0, false);
+  //   }
+  // }
 }
