@@ -26,8 +26,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 
 public class MotorizedLiftSubsystem extends LiftSubsystem {
@@ -47,7 +51,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
     private double intakeAngle;
     private double topAngle;
-    private double topLimit;
+    private double defaultAngle;
 
     public MotorizedLiftSubsystem() {
         
@@ -58,15 +62,17 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
         rightLiftMotor.setNeutralMode(NeutralModeValue.Brake);
         motor = rightLiftMotor;
 
+        SparkMaxConfig sparkConfig = new SparkMaxConfig();
+        sparkConfig.closedLoop.p(0.2); // Found by testing with REV Hardware Client
+        sparkConfig.closedLoop.d(0.001);
+
         rotationMotor = new SparkMax(FlipperCanId, MotorType.kBrushless);
+        rotationMotor.configure(sparkConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+
         rotationController = rotationMotor.getClosedLoopController();
+        rotationController.setReference(LiftConstants.IntakeAngle, ControlType.kPosition);
         rotationEncoder = rotationMotor.getEncoder();
 
-        // Spool = new SparkMax(WireSpoolCanId, MotorType.kBrushless);
-        // SpoolController = Spool.getClosedLoopController();
-        // SpoolEncoder = Spool.getEncoder();
-
-        // CB: When we wire the limit switch
         DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
         bottomReached = () -> !limit.get();
         reversed = false;
@@ -74,17 +80,17 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
         rereadPreferences();
     }
 
-    private boolean isClose(LiftPosition reference, double motorPos) {
+    private boolean isNearby(LiftPosition reference, double motorPos) {
         return Math.abs(motorPos - reference.setPoint) < 0.5;
     }
     @Override
     LiftPosition getPosition() {
         double motorPosition = motor.getPosition().getValueAsDouble();
-        if (isClose(Intake, motorPosition)) return Intake;
-        if (isClose(Shelf, motorPosition)) return Shelf;
-        if (isClose(Low, motorPosition)) return Low;
-        if (isClose(Medium, motorPosition)) return Medium;
-        if (isClose(High, motorPosition)) return High;
+        if (isNearby(Intake, motorPosition)) return Intake;
+        if (isNearby(Shelf, motorPosition)) return Shelf;
+        if (isNearby(Low, motorPosition)) return Low;
+        if (isNearby(Medium, motorPosition)) return Medium;
+        if (isNearby(High, motorPosition)) return High;
         return null;
     }
 
@@ -102,7 +108,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
         intakeAngle = preferences.get("IntakeAngle", LiftConstants.IntakeAngle);
         topAngle = preferences.get("TopAngle", LiftConstants.TopAngle);
-        topLimit  = preferences.get("DefaultAngle", LiftConstants.TopLimit);
+        defaultAngle  = preferences.get("DefaultAngle", LiftConstants.TopLimit);
     }
 
     @Override
@@ -119,7 +125,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
         return run(() -> {
-            if (motor.getPosition().getValueAsDouble() >= topLimit){
+            if (motor.getPosition().getValueAsDouble() >= defaultAngle){
                 motor.set(0.0);
             }
             else {
@@ -135,16 +141,23 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
                     motor.set(0.0);
                 }
             }
-            rotationMotor.set(0);
-            reversed = position == High ? true : false;
+
+            final double carriageAngle;
+            if (position == High) {
+                carriageAngle = topAngle;
+            } else if (position == Intake) {
+                carriageAngle = intakeAngle;
+            } else {
+                carriageAngle = defaultAngle;
+            }
+            rotationController.setReference(carriageAngle, ControlType.kPosition);
         });
     }
 
     @Override
     public Command gotoGround() {
         PositionVoltage groundPosition = new PositionVoltage(0).withSlot(0);
-        return runEnd(
-            () -> {
+        return run(() -> {
             if (motor.getPosition().getValueAsDouble() > 0.4) {
                 // Drive with a PID when far away for max speed.
                 motor.setControl(groundPosition);
@@ -157,19 +170,18 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
                 //SpoolController.setReference(0, ControlType.kPosition);
                 motor.setPosition(0.0);
             }
-            SmartDashboard.putBoolean("Running To Ground", true);
             //setIntakeAngle();
             //SpoolFollow();
             reversed = false;
-            rotationMotor.set(0);
-        },
-        () -> SmartDashboard.putBoolean("Running To Ground", false));
+            
+            rotationController.setReference(defaultAngle, ControlType.kPosition);
+        });
     }
 
     @Override
     public Command move(DoubleSupplier axis) {
          return run(() -> {
-            if (motor.getPosition().getValueAsDouble() >= topLimit && axis.getAsDouble() > 0){
+            if (motor.getPosition().getValueAsDouble() >= defaultAngle && axis.getAsDouble() > 0){
                 motor.set(0.0);
             }
             else{

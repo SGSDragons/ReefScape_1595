@@ -96,11 +96,9 @@ public final class Constants {
 
       public static final double TopLimit = 77;
 
-      public static final double TopAngle = 3;
+      public static final double TopAngle = 60;
       public static final double DefaultAngle = 0;
-      public static final double IntakeAngle = 1;
-
-      public static final double WiretoLiftRatio = 1;
+      public static final double IntakeAngle = 43;
 
     }
 
@@ -108,7 +106,14 @@ public final class Constants {
 
       public static final double outtakeSpeed = 0.5;
 
-      public static final double pointRight = 0.0;
+      // Servo assignments for Axon programmer:
+      //   Angle: 80
+      //   Neutral: -65 (Depends on mounting)
+      //   Damping: 85
+      //   Overload Protection: 0.5s -> 50%
+      //                        2.0s -> 35%
+      //                        9.0s -> minimum
+      public static final double pointRight = 0.09;
       public static final double middle = 0.5;
       public static final double pointLeft = 1;
 

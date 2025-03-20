@@ -48,4 +48,5 @@ public class LiftSubsystem extends SubsystemBase {
     public Command gotoGround() { return run(() -> {}); }
 
     public Command move(DoubleSupplier axis) { return run(() -> {}); }
+
 }
