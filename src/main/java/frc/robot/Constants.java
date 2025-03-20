@@ -53,7 +53,7 @@ public final class Constants {
       }
 
       public static final class Carriage {
-        public static final int WheelsMotorCanId = 21; // Wheels that transport a coral
+        public static final int WheelsMotorCanId = 21; // Wheels that transport a coral 21
         public static final int directionServoChannelId = 0; // The PWM port that the servo plugs into 
       }
 

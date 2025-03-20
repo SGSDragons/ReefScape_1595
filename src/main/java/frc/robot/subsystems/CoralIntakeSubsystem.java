@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CoralIntakeConstants;
-import static frc.robot.Constants.HardwareID.CoralIntake.*; 
+import static frc.robot.Constants.HardwareID.CoralIntake.*;
+
+import java.util.function.DoubleSupplier; 
 
 public class CoralIntakeSubsystem extends SubsystemBase {
 
@@ -56,6 +58,13 @@ public class CoralIntakeSubsystem extends SubsystemBase {
       intakeRotationMotor.getConfigurator().apply(config);
   }
 
+  public void reconfigureSetpoints() {
+      Extend = getPreference("extend", CoralIntakeConstants.Extend);
+      Retract = getPreference("retract", CoralIntakeConstants.Retract);
+      Intake = getPreference("intake", CoralIntakeConstants.Intake);
+      Outtake = getPreference("outtake", CoralIntakeConstants.Outtake);
+  }
+
   public Command Rotate(double position) {
 
     return run(() -> {
@@ -86,14 +95,13 @@ public class CoralIntakeSubsystem extends SubsystemBase {
     });
   }
 
-  public void Intake() {  
-    frontWheelsMotor.set(Intake);
-    sideWheelsMotor.set(Intake);
-  }
+  public Command SpinIntake(DoubleSupplier speed) {  
+    return run(() -> {
 
-  public void Outtake() {
-    frontWheelsMotor.set(Outtake);
-    sideWheelsMotor.set(Outtake);
+      frontWheelsMotor.set(speed.getAsDouble());
+      sideWheelsMotor.set(speed.getAsDouble());
+
+    });
   }
 
   @Override

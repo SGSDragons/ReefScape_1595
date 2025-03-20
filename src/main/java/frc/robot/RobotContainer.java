@@ -38,7 +38,7 @@ public class RobotContainer {
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
   private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
-  private final AlgaeSubsystem algae = new AlgaeSubsystem();
+  private final AlgaeSubsystemFake algae = new AlgaeSubsystemFake();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -121,7 +121,7 @@ public class RobotContainer {
 
     algae.setDefaultCommand(algae.Roller(rightY));
     //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
-    // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
+    //operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
 
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
@@ -163,6 +163,7 @@ public class RobotContainer {
     // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
 
     operatorController.y().onTrue(algae.runOnce(carriage::rereadPreferences));
+    operatorController.povUp().onTrue(carriage.spin());
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     //algae.setDefaultCommand(algae.rotate(rightY));

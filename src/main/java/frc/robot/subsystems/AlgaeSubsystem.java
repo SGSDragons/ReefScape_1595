@@ -10,6 +10,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -27,6 +28,7 @@ public class AlgaeSubsystem extends SubsystemBase {
 
   TalonFX FourBarMotor;
   SparkMax Roller;
+  RelativeEncoder RollerEncoder;
 
   public double Extend = getPreference("extend", AlgaeContants.Extend);
   public double Retract = getPreference("retract", AlgaeContants.Retract);
@@ -38,6 +40,7 @@ public class AlgaeSubsystem extends SubsystemBase {
     FourBarMotor.setPosition(0.0);
 
     Roller = new SparkMax(RollerCanId, MotorType.kBrushless);
+    RollerEncoder = Roller.getEncoder();
 
     reconfigurePid();
   }
@@ -111,9 +114,10 @@ public class AlgaeSubsystem extends SubsystemBase {
   }
 
   public void telemetry() {
-      SmartDashboard.putNumber("Algae Motor Velocity", FourBarMotor.getVelocity().getValueAsDouble());
-      SmartDashboard.putNumber("Algae Motor Position", FourBarMotor.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber("Algae Motor Voltage", FourBarMotor.getMotorVoltage().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Velocity", FourBarMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Position", FourBarMotor.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Voltage", FourBarMotor.getMotorVoltage().getValueAsDouble());
+      SmartDashboard.putNumber("Roller Velocity", RollerEncoder.getVelocity());
   }
 
   public double getPreference(String key, double fallback) {

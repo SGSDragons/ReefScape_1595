@@ -80,7 +80,7 @@ public class CarriageSubsystem extends SubsystemBase {
     public Command pointRight() {
         return run(() -> direction.set(CarriageConstants.pointRight));
     }
-    
+
     public Command pointLeft() {
         return run(() -> direction.set(CarriageConstants.pointLeft));
     }
