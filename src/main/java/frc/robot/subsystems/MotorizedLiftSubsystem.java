@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -30,7 +31,6 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 
@@ -47,7 +47,6 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
     // RelativeEncoder SpoolEncoder;
 
     final BooleanSupplier bottomReached;
-    boolean reversed;
 
     private double intakeAngle;
     private double topAngle;
@@ -75,7 +74,6 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
         DigitalInput limit = new DigitalInput(LimitSwitchChannelId);
         bottomReached = () -> !limit.get();
-        reversed = false;
 
         rereadPreferences();
     }
@@ -123,24 +121,27 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
     @Override
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
-
+        
         return run(() -> {
-            if (motor.getPosition().getValueAsDouble() >= LiftConstants.TopLimit){
-                motor.set(0.0);
-            }
-            else {
-                position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
 
-                if (0.1 < Math.abs(motor.getPosition().getValueAsDouble() - position.setPoint)) {
-                    // create a position closed-loop request, voltage output, slot 0 configs
-                    final PositionVoltage lift_request = new PositionVoltage(position.setPoint).withSlot(0);
-                    // set position to 10 rotations
-                    motor.setControl(lift_request);
-                } else {
-                    // Close enough
-                    motor.set(0.0);
-                }
+            position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
+            
+            double error = motor.getPosition().getValueAsDouble() - position.setPoint;
+
+            if (bottomReached.getAsBoolean() && error > 0.0) {
+                motor.set(0.0);
+                motor.setPosition(0.0);
+            } else if (0.2 < Math.abs(error)) {
+                // create a position closed-loop request, voltage output, slot 0 configs
+                // Apply some overshoot to settle clean
+                double compensation = Math.signum(error)*0.3;
+                PositionVoltage lift_request = new PositionVoltage(position.setPoint+compensation);
+                motor.setControl(lift_request);
+            } else {
+                // Close enough
+                motor.stopMotor();
             }
+
 
             final double carriageAngle;
             if (position == High) {
@@ -156,24 +157,21 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
     @Override
     public Command gotoGround() {
-        PositionVoltage groundPosition = new PositionVoltage(0).withSlot(0);
+        PositionVoltage groundPosition = new PositionVoltage(0).withSlot(1);
         return run(() -> {
-            if (motor.getPosition().getValueAsDouble() > 0.4) {
-                // Drive with a PID when far away for max speed.
-                motor.setControl(groundPosition);
-            } else if (!bottomReached.getAsBoolean()) {
-                // Drive slowly until the limit switch is not reached
-                motor.set(-0.1);
-            } else {
+            if (bottomReached.getAsBoolean()) {
                 // It's at the bottom. Stop the motor and rezero the encoder
                 motor.set(0.0);
-                //SpoolController.setReference(0, ControlType.kPosition);
                 motor.setPosition(0.0);
             }
-            //setIntakeAngle();
-            //SpoolFollow();
-            reversed = false;
-            
+            else if (motor.getPosition().getValueAsDouble() > 0.4) {
+                // Drive with a PID when far away for max speed.
+                motor.setControl(groundPosition);
+            } else {
+                // Drive slowly until the limit switch is not reached
+                motor.set(-0.1);
+            }
+
             rotationController.setReference(defaultAngle, ControlType.kPosition);
         });
     }
@@ -184,30 +182,17 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
             if (motor.getPosition().getValueAsDouble() >= defaultAngle && axis.getAsDouble() > 0){
                 motor.set(0.0);
             }
-            else{
+            else {
                 double speed = MathUtil.applyDeadband(axis.getAsDouble(), 0.2);
                 if (speed < 0 && bottomReached.getAsBoolean()) {
                     speed = 0.0;
                     motor.setPosition(0.0);
                 }
                 motor.set(speed);
-                reversed = false;
             }
             rotationMotor.set(0);
          });
     }
-
-    // public void setIntakeAngle() {
-    //     rotationController.setReference(intakeAngle, ControlType.kPosition);
-    // }
-
-    // public void setDefaultAngle() {
-    //     rotationController.setReference(defaultAngle, ControlType.kPosition);
-    // }
-
-    // public void setTopAngle() {
-    //      rotationController.setReference(topAngle, ControlType.kPosition);
-    // }
 
     @Override
     public void periodic() {

@@ -33,7 +33,7 @@ public class LiftSubsystem extends SubsystemBase {
     public static final LiftPosition Medium = new LiftPosition("Medium", LiftConstants.Medium);
     public static final LiftPosition High = new LiftPosition("High", LiftConstants.High);
 
-    void rereadPreferences() {}
+    public void rereadPreferences() {}
 
     // Returns one of the position instances if the lift is "close"
     // Returns null if it's not close to any position
