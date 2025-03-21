@@ -24,7 +24,7 @@ public class CarriageSubsystem extends SubsystemBase {
 
     Servo direction;
 
-    LiftSubsystem lift;
+    final LiftSubsystem lift;
 
     public double outtakeSpeed;
     public double pointRight;
@@ -32,6 +32,8 @@ public class CarriageSubsystem extends SubsystemBase {
 
     public CarriageSubsystem(LiftSubsystem lift) {
 
+        this.lift = lift;
+        
         coralMotor = new SparkMax(WheelsMotorCanId, MotorType.kBrushless);
         coralEncoder = coralMotor.getEncoder();
 

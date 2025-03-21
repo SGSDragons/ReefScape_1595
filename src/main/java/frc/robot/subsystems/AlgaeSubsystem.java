@@ -64,27 +64,8 @@ public class AlgaeSubsystem extends SubsystemBase {
     });
   }
 
-  public void spinRoller(DoubleSupplier speed){
-    Roller.set(speed.getAsDouble()/2);
-  }
-
   public Command Roller(DoubleSupplier speed){
-    return run(() -> spinRoller(speed));
-  }
-
-  public void stop() {
-    // var talonFXConfigurator = FourBarMotor.getConfigurator();
-    // var limitConfigs = new CurrentLimitsConfigs();
-
-    // FourBarMotor.getSupplyVoltage();
-    // FourBarMotor.getMotorVoltage();
-
-    // // enable stator current limit
-    // //limitConfigs.StatorCurrentLimit = getPreference("currentlimit", AlgaeContants.CurrentLimit);
-    // limitConfigs.StatorCurrentLimit = AlgaeContants.CurrentLimit;
-    // limitConfigs.StatorCurrentLimitEnable = true;
-
-    // talonFXConfigurator.apply(limitConfigs);
+    return run(() -> Roller.set(speed.getAsDouble()/2));
   }
 
   private Command setArmPosition(final double target, DoubleSupplier speed) {
@@ -93,7 +74,7 @@ public class AlgaeSubsystem extends SubsystemBase {
     final PositionVoltage request = new PositionVoltage(target).withSlot(0);
     return new FunctionalCommand(
       () -> {FourBarMotor.setControl(request);}, 
-      () -> {spinRoller(speed);},
+      () -> {Roller(speed);},
       (interrupted) -> {FourBarMotor.set(0.0);},
       () -> 0.2 >  Math.abs(FourBarMotor.getPosition().getValueAsDouble() - target),
       this

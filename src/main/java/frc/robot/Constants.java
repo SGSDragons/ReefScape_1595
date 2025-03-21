@@ -89,16 +89,16 @@ public final class Constants {
 
       public static final double intakeheight = 27.63;
       public static final double Ground = 0;
-      public static final double Shelf = 16.6;
+      public static final double Shelf = 18.24;
       public static final double Low = 16.03;
       public static final double Medium = 38.86;
-      public static final double High = 60;
+      public static final double High = 81;
 
-      public static final double TopLimit = 77;
+      public static final double TopLimit = 82;
 
-      public static final double TopAngle = 60;
+      public static final double TopAngle = -83;
+      public static final double IntakeAngle = -40;
       public static final double DefaultAngle = 0;
-      public static final double IntakeAngle = 43;
 
     }
 
@@ -114,7 +114,7 @@ public final class Constants {
       //                        2.0s -> 35%
       //                        9.0s -> minimum
       public static final double pointRight = 0.09;
-      public static final double middle = 0.5;
+      public static final double middle = 0.54;
       public static final double pointLeft = 1;
 
     }

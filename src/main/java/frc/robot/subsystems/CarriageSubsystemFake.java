@@ -9,6 +9,7 @@ import frc.robot.Constants.CarriageConstants;
 import frc.robot.subsystems.LiftSubsystem.LiftPosition;
 
 public class CarriageSubsystemFake extends SubsystemBase{
+
     public void rereadPreferences() {}
 
     public Command spin() { return run(() -> {}); }
@@ -17,7 +18,7 @@ public class CarriageSubsystemFake extends SubsystemBase{
 
     public Command pointRight() { return run(() -> {}); }
     
-    Command pointLeft() { return run(() -> {}); }
+    public Command pointLeft() { return run(() -> {}); }
 
     @Override
     public void periodic(){ telemetry(); }

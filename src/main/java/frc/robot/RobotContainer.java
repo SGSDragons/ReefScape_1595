@@ -33,11 +33,11 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
 
-  private final DriveSubsystem drive = new DriveSubsystem(); //new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
-  private final LiftSubsystem lift = new LiftSubsystem(); // new MotorizedLiftSubsystem();
+  private final DriveSubsystem drive = new DriveSubsystem(); //new SwerveSubsystem(Units.MetersPerSecond.of(5), Pose2d.kZero);
+  private final MotorizedLiftSubsystem lift = new MotorizedLiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
-  //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  private final CoralIntakeSubsystemFake intake = new CoralIntakeSubsystemFake();
+  private final CarriageSubsystemFake carriage = new CarriageSubsystemFake();
   private final AlgaeSubsystemFake algae = new AlgaeSubsystemFake();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -118,13 +118,11 @@ public class RobotContainer {
 
     operatorController.leftBumper().onTrue(algae.Extend(rightY));
     operatorController.rightBumper().onTrue(algae.Retract(rightY));
-
     algae.setDefaultCommand(algae.Roller(rightY));
-    //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
-    //operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
-
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
+    //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
+    //operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
 
     // carriage.setDefaultCommand(carriage.middle());
     // operatorController.leftBumper().whileTrue(carriage.shootLeft());
@@ -144,34 +142,31 @@ public class RobotContainer {
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
+    //Drive
+
     drive.setDefaultCommand(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
+  //climb.setDefaultCommand(climb.drive(rightY));
+
     lift.setDefaultCommand(lift.move(leftY));
-    //climb.setDefaultCommand(climb.drive(rightY));
 
     //Reread Lift PID constants from preferences
+    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
     operatorController.a().whileTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
     operatorController.x().whileTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
 
-    operatorController.b().onTrue(carriage.pointMiddle());
-    operatorController.leftBumper().onTrue(carriage.pointLeft());
-    operatorController.rightBumper().onTrue(carriage.pointRight());
-
     algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
-    // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
-
+    // operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
     operatorController.y().onTrue(algae.runOnce(carriage::rereadPreferences));
-    operatorController.povUp().onTrue(carriage.spin());
-    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
-
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
 
-    // carriage.setDefaultCommand(carriage.middle());
-    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    // operatorController.rightBumper().whileTrue(carriage.shootRight());
+    operatorController.povUp().onTrue(carriage.spin());
+    carriage.setDefaultCommand(carriage.pointMiddle());
+    operatorController.leftBumper().whileTrue(carriage.pointLeft());
+    operatorController.rightBumper().whileTrue(carriage.pointRight());
   }
 
   /**

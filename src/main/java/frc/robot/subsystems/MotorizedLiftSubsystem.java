@@ -125,7 +125,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
 
         return run(() -> {
-            if (motor.getPosition().getValueAsDouble() >= defaultAngle){
+            if (motor.getPosition().getValueAsDouble() >= LiftConstants.TopLimit){
                 motor.set(0.0);
             }
             else {
@@ -194,27 +194,20 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
                 reversed = false;
             }
             rotationMotor.set(0);
-            //setDefaultAngle();
-            //SpoolFollow();
          });
     }
 
-    // public void SpoolFollow(){
-    //     double speed = motor.getVelocity().getValueAsDouble() * getPreference("ratio", LiftConstants.WiretoLiftRatio);
-    //     Spool.set(speed);
+    // public void setIntakeAngle() {
+    //     rotationController.setReference(intakeAngle, ControlType.kPosition);
     // }
 
-    public void setIntakeAngle() {
-        rotationController.setReference(intakeAngle, ControlType.kPosition);
-    }
+    // public void setDefaultAngle() {
+    //     rotationController.setReference(defaultAngle, ControlType.kPosition);
+    // }
 
-    public void setDefaultAngle() {
-        // rotationController.setReference(defaultAngle, ControlType.kPosition);
-    }
-
-    public void setTopAngle() {
-         rotationController.setReference(topAngle, ControlType.kPosition);
-    }
+    // public void setTopAngle() {
+    //      rotationController.setReference(topAngle, ControlType.kPosition);
+    // }
 
     @Override
     public void periodic() {
