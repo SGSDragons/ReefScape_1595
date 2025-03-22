@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 12.672325583065257,
-        "y": 1.1347814223345583
+        "y": 1.1347814223345578
       },
       "isLocked": false,
       "linkedName": "ReefSW2"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.58543386478003
+    "rotation": -53.585433864780036
   },
   "reversed": false,
   "folder": null,
