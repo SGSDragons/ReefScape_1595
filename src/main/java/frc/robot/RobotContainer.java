@@ -38,7 +38,7 @@ public class RobotContainer {
 
   private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(6), Pose2d.kZero);
   private final MotorizedLiftSubsystem lift = new MotorizedLiftSubsystem();
-  //private final ClimbSubsystem climb = new ClimbSubsystem();
+  private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystemFake intake = new CoralIntakeSubsystemFake();
   private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
@@ -98,6 +98,9 @@ public class RobotContainer {
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
+    driverController.a().whileTrue(climb.climbUp());
+    driverController.y().whileTrue(climb.climbDown());
+    
     // Drive relative to the field by default.
     // Left joystick up is away from the driver station. Left joystick left moves left on the field
     // Right joystick up looks away from the driver station. Right joystick left looks left on the field
@@ -117,13 +120,15 @@ public class RobotContainer {
     // to make slow adjustments to the target position. These adjustments are permanent.
     operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
     operatorController.x().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
-    operatorController.b().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    //operatorController.b().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
     operatorController.y().onTrue(lift.gotoPosition(LiftSubsystem.Medium, leftY));
 
-    operatorController.rightTrigger().onTrue(carriage.spin());
 
     operatorController.povDown().onTrue(lift.gotoGround());
     operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    lift.setDefaultCommand(lift.move(leftY));
+    operatorController.b().whileTrue(lift.descore());
+
 
     operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
     operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
@@ -148,6 +153,7 @@ public class RobotContainer {
     DoubleSupplier lefttrigger = () -> operatorController.getRawAxis(Axis.kLeftTrigger.value);
     DoubleSupplier righttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
+    
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 

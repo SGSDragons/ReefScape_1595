@@ -99,6 +99,7 @@ public final class Constants {
       public static final double TopAngle = 83;
       public static final double IntakeAngle = 40;
       public static final double DefaultAngle = 0;
+      public static final double DescoreAngle = 70;
 
     }
 

@@ -51,6 +51,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
     private double intakeAngle;
     private double topAngle;
     private double defaultAngle;
+    private double descoreAngle;
 
     public MotorizedLiftSubsystem() {
         
@@ -107,6 +108,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
         intakeAngle = preferences.get("IntakeAngle", LiftConstants.IntakeAngle);
         topAngle = preferences.get("TopAngle", LiftConstants.TopAngle);
         defaultAngle  = preferences.get("DefaultAngle", LiftConstants.DefaultAngle);
+        descoreAngle = preferences.get("DescoreAngle", LiftConstants.DescoreAngle);
     }
 
     @Override
@@ -189,10 +191,14 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
                     speed = 0.0;
                     motor.setPosition(0.0);
                 }
-                motor.set(speed);
+                motor.set(speed/2);
             }
-            rotationMotor.set(0);
+            //rotationMotor.set(0);
          });
+    }
+
+    public Command descore() {
+        return run(() -> rotationController.setReference(descoreAngle, ControlType.kPosition));
     }
 
     @Override
