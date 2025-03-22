@@ -106,7 +106,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
         intakeAngle = preferences.get("IntakeAngle", LiftConstants.IntakeAngle);
         topAngle = preferences.get("TopAngle", LiftConstants.TopAngle);
-        defaultAngle  = preferences.get("DefaultAngle", LiftConstants.TopLimit);
+        defaultAngle  = preferences.get("DefaultAngle", LiftConstants.DefaultAngle);
     }
 
     @Override
@@ -146,11 +146,12 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
             final double carriageAngle;
             if (position == High) {
                 carriageAngle = topAngle;
-            } else if (position == Intake) {
+            } else if (position == Intake || position == Shelf) {
                 carriageAngle = intakeAngle;
             } else {
                 carriageAngle = defaultAngle;
             }
+            SmartDashboard.putNumber("target angle", carriageAngle);
             rotationController.setReference(carriageAngle, ControlType.kPosition);
         });
     }
@@ -179,7 +180,7 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
     @Override
     public Command move(DoubleSupplier axis) {
          return run(() -> {
-            if (motor.getPosition().getValueAsDouble() >= defaultAngle && axis.getAsDouble() > 0){
+            if (motor.getPosition().getValueAsDouble() >= LiftConstants.TopLimit && axis.getAsDouble() > 0){
                 motor.set(0.0);
             }
             else {

@@ -36,12 +36,12 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
 
-  private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
-  private final LiftSubsystem lift = new MotorizedLiftSubsystem();
+  private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(6), Pose2d.kZero);
+  private final MotorizedLiftSubsystem lift = new MotorizedLiftSubsystem();
   //private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystemFake intake = new CoralIntakeSubsystemFake();
-  private final CarriageSubsystemFake carriage = new CarriageSubsystemFake();
-  private final AlgaeSubsystemFake algae = new AlgaeSubsystemFake();
+  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -115,16 +115,22 @@ public class RobotContainer {
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
-    operatorController.b().onTrue(lift.gotoPosition(LiftSubsystem.Medium, leftY));
-    operatorController.y().onTrue(lift.gotoPosition(LiftSubsystem.High, leftY));
+    operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
+    operatorController.x().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.b().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.y().onTrue(lift.gotoPosition(LiftSubsystem.Medium, leftY));
+
+    operatorController.rightTrigger().onTrue(carriage.spin());
 
     operatorController.povDown().onTrue(lift.gotoGround());
-    operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
 
-    operatorController.leftBumper().onTrue(algae.Extend(rightY));
-    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    carriage.setDefaultCommand(carriage.Middle(rightY));
+
+    operatorController.leftTrigger().onTrue(algae.Extend(rightY));
+    operatorController.rightTrigger().onTrue(algae.Retract(rightY));
     algae.setDefaultCommand(algae.Roller(rightY));
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
@@ -142,7 +148,7 @@ public class RobotContainer {
     DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier rightY = () -> operatorController.getRawAxis(Axis.kRightY.value);
     DoubleSupplier lefttrigger = () -> operatorController.getRawAxis(Axis.kLeftTrigger.value);
     DoubleSupplier righttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
@@ -163,9 +169,15 @@ public class RobotContainer {
     operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
     operatorController.x().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
 
+
+    //operatorController.povUp().onTrue(carriage.spin());
+    operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    carriage.setDefaultCommand(carriage.Middle(rightY));
+
     operatorController.b().onTrue(carriage.pointMiddle());
-    operatorController.leftBumper().onTrue(carriage.pointLeft());
-    operatorController.rightBumper().onTrue(carriage.pointRight());
+    // operatorController.leftBumper().onTrue(carriage.pointLeft());
+    // operatorController.rightBumper().onTrue(carriage.pointRight());
 
     //algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
@@ -174,13 +186,8 @@ public class RobotContainer {
     operatorController.y().onTrue(lift.runOnce(lift::rereadPreferences ));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
-
-    operatorController.povUp().onTrue(carriage.spin());
-    carriage.setDefaultCommand(carriage.pointMiddle());
-    operatorController.leftBumper().whileTrue(carriage.pointLeft());
-    operatorController.rightBumper().whileTrue(carriage.pointRight());
   }
 
   /**
