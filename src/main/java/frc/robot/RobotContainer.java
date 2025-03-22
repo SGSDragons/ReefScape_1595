@@ -124,9 +124,12 @@ public class RobotContainer {
     operatorController.povDown().onTrue(lift.gotoGround());
     operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
 
+    operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    carriage.setDefaultCommand(carriage.Middle(rightY));
 
-    operatorController.leftBumper().onTrue(algae.Extend(rightY));
-    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    operatorController.leftTrigger().onTrue(algae.Extend(rightY));
+    operatorController.rightTrigger().onTrue(algae.Retract(rightY));
     algae.setDefaultCommand(algae.Roller(rightY));
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
@@ -172,8 +175,8 @@ public class RobotContainer {
     carriage.setDefaultCommand(carriage.Middle(rightY));
 
     operatorController.b().onTrue(carriage.pointMiddle());
-    operatorController.leftBumper().onTrue(carriage.pointLeft());
-    operatorController.rightBumper().onTrue(carriage.pointRight());
+    // operatorController.leftBumper().onTrue(carriage.pointLeft());
+    // operatorController.rightBumper().onTrue(carriage.pointRight());
 
     //algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
