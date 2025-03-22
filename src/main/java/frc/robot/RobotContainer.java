@@ -101,7 +101,8 @@ public class RobotContainer {
     // Drive relative to the field by default.
     // Left joystick up is away from the driver station. Left joystick left moves left on the field
     // Right joystick up looks away from the driver station. Right joystick left looks left on the field
-    drive.setDefaultCommand(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
+    drive.setDefaultCommand(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY, 1.0));
+    driverController.leftTrigger(0.5).whileTrue(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY, 0.2));
 
     // When holding the right bumper, change joysticks to drive relative to the Robot (left y is "forward", right x turns left/right)
     driverController.rightBumper().whileTrue(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
