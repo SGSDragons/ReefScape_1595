@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.Constants.Reefscape;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
 import java.io.File;
@@ -150,7 +151,7 @@ public class SwerveSubsystem extends DriveSubsystem {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
                     // This will flip the path being followed to the red side of the field.
                     // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    () -> false,
+                    () -> Reefscape.isRedAlliance(),
 
                     // Reference to this subsystem to set requirements
                     this

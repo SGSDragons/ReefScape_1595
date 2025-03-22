@@ -8,6 +8,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
@@ -50,6 +53,8 @@ public class RobotContainer {
       SwerveSubsystem swerve = (SwerveSubsystem) drive;
       swerve.resetOdometry(Reefscape.getStart());
     }
+    NamedCommands.registerCommand("shelf", lift.gotoPosition(LiftSubsystem.Shelf, () -> 0.0));
+    NamedCommands.registerCommand("shoot", carriage.spin());
   }
 
   //      ______________________________(17, 8)
@@ -187,7 +192,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-    return null;
+  return new DriveForward();
+    //return new PathPlannerAuto("middleauto1");
 
 //    Approach ideal;
 //    switch(DriverStation.getRawAllianceStation()) {
@@ -217,30 +223,30 @@ public Command getAutonomousCommand() {
 //    );
   }
 
-  // class DriveForward extends Command {
-  //   private Instant limit;
-  //   @Override
-  //   public void initialize() {
-  //     limit = Instant.now().plusSeconds(5);
-  //   }
+  class DriveForward extends Command {
+    private Instant limit;
+    @Override
+    public void initialize() {
+      limit = Instant.now().plusSeconds(5);
+    }
 
-  //   @Override
-  //   public void execute() {
-  //     if (Instant.now().isAfter(limit)) {
-  //       drive.drive(Translation2d.kZero, 0.0, false);
-  //     } else {
-  //       drive.drive(new Translation2d(0.2, 0.0), 0.0, false);
-  //     }
-  //   }
+    @Override
+    public void execute() {
+      if (Instant.now().isAfter(limit)) {
+        ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+      } else {
+        ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
+      }
+    }
 
-  //   @Override
-  //   public boolean isFinished() {
-  //     return Instant.now().isAfter(limit);
-  //   }
+    @Override
+    public boolean isFinished() {
+      return Instant.now().isAfter(limit);
+    }
 
-  //   @Override
-  //   public void end(boolean interrupted) {
-  //     drive.drive(Translation2d.kZero, 0.0, false);
-  //   }
-  // }
+    @Override
+    public void end(boolean interrupted) {
+      ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+    }
+  }
 }
