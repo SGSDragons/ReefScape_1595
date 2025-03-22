@@ -91,8 +91,8 @@ public class RobotContainer {
     DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
-    DoubleSupplier lefttrigger = () -> operatorController.getRawAxis(Axis.kLeftTrigger.value);
+    DoubleSupplier rightY = () -> operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier lefttrigger = () -> -operatorController.getRawAxis(Axis.kLeftTrigger.value);
     DoubleSupplier righttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
     // Clear any bound triggers and create new bindings
@@ -128,17 +128,13 @@ public class RobotContainer {
     operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
     carriage.setDefaultCommand(carriage.Middle(rightY));
 
-    operatorController.leftTrigger().onTrue(algae.Extend(rightY));
-    operatorController.rightTrigger().onTrue(algae.Retract(rightY));
-    algae.setDefaultCommand(algae.Roller(rightY));
+    operatorController.povRight().onTrue(algae.Extend(righttrigger));
+    operatorController.povLeft().onTrue(algae.Retract(lefttrigger));
+    algae.setDefaultCommand(algae.Roller(righttrigger,lefttrigger));
     //algae.setDefaultCommand(algae.rotate(rightY));
     //algae.setDefaultCommand(algae.spin(rightY));
     //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
     //operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
-
-    // carriage.setDefaultCommand(carriage.middle());
-    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    // operatorController.rightBumper().whileTrue(carriage.shootRight());
   }
 
   // Controller behaviors when running in test mode. These are meant for
@@ -173,10 +169,12 @@ public class RobotContainer {
     operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
     operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
     carriage.setDefaultCommand(carriage.Middle(rightY));
-
-    operatorController.b().onTrue(carriage.pointMiddle());
-    // operatorController.leftBumper().onTrue(carriage.pointLeft());
+        // operatorController.leftBumper().onTrue(carriage.pointLeft());
     // operatorController.rightBumper().onTrue(carriage.pointRight());
+
+    operatorController.povRight().onTrue(algae.Extend(righttrigger));
+    operatorController.povLeft().onTrue(algae.Retract(lefttrigger));
+    algae.setDefaultCommand(algae.Roller(righttrigger,lefttrigger));
 
     //algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));

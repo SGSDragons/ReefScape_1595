@@ -64,8 +64,8 @@ public class AlgaeSubsystem extends SubsystemBase {
     });
   }
 
-  public Command Roller(DoubleSupplier speed){
-    return run(() -> Roller.set(speed.getAsDouble()/2));
+  public Command Roller(DoubleSupplier intake, DoubleSupplier outake){
+    return run(() -> Roller.set((intake.getAsDouble() - outake.getAsDouble())/2));
   }
 
   private Command setArmPosition(final double target, DoubleSupplier speed) {
@@ -74,7 +74,7 @@ public class AlgaeSubsystem extends SubsystemBase {
     final PositionVoltage request = new PositionVoltage(target).withSlot(0);
     return new FunctionalCommand(
       () -> {FourBarMotor.setControl(request);}, 
-      () -> {Roller(speed);},
+      () -> {Roller.set(speed.getAsDouble());},
       (interrupted) -> {FourBarMotor.set(0.0);},
       () -> 0.2 >  Math.abs(FourBarMotor.getPosition().getValueAsDouble() - target),
       this
