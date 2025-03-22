@@ -87,6 +87,30 @@ public class CarriageSubsystem extends SubsystemBase {
         return run(() -> direction.set(CarriageConstants.pointLeft));
     }
 
+    public Command shootRight(DoubleSupplier speed){
+        return run(() -> {
+            if (Math.abs(CarriageConstants.pointRight - direction.getPosition()) > 0.05)
+                direction.set(CarriageConstants.pointRight);
+            coralMotor.set(speed.getAsDouble());
+        });
+    }
+
+    public Command shootLeft(DoubleSupplier speed){
+        return run(() -> {
+            if (Math.abs(CarriageConstants.pointLeft - direction.getPosition()) > 0.05)
+                direction.set(CarriageConstants.pointLeft);
+            coralMotor.set(speed.getAsDouble());
+        });
+    }
+
+    public Command Middle(DoubleSupplier speed){
+        return run(() -> {
+            if (Math.abs(CarriageConstants.middle - direction.getPosition()) > 0.05)
+                direction.set(CarriageConstants.middle);
+            coralMotor.set(speed.getAsDouble());
+        });
+    }
+
 
     @Override
     public void periodic(){;
