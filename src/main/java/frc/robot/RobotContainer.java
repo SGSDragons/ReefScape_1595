@@ -53,7 +53,7 @@ public class RobotContainer {
       SwerveSubsystem swerve = (SwerveSubsystem) drive;
       swerve.resetOdometry(Reefscape.getStart());
     }
-    NamedCommands.registerCommand("shelf", lift.gotoPosition(LiftSubsystem.Shelf, () -> 0.0));
+    NamedCommands.registerCommand("shelf", lift.gotoPosition(LiftSubsystem.Shelf, null));
     NamedCommands.registerCommand("shoot", carriage.spin());
   }
 
@@ -74,7 +74,7 @@ public class RobotContainer {
   // Thus, Blue axis are inverted.
 
   class DriverSticks {
-    private final double inverter = -1.0;
+    private final double inverter = Reefscape.isRedAlliance() ? 1.0 : -1.0;
     double readAxis(XboxController.Axis axis) {
       return driverController.getRawAxis(axis.value);
     }
@@ -200,8 +200,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-  return new DriveForward();
-    //return new PathPlannerAuto("middleauto1");
+  // return new DriveForward();
+    return new PathPlannerAuto("middleauto1");
 
 //    Approach ideal;
 //    switch(DriverStation.getRawAllianceStation()) {
@@ -231,30 +231,30 @@ public Command getAutonomousCommand() {
 //    );
   }
 
-  class DriveForward extends Command {
-    private Instant limit;
-    @Override
-    public void initialize() {
-      limit = Instant.now().plusSeconds(5);
-    }
+  // class DriveForward extends Command {
+  //   private Instant limit;
+  //   @Override
+  //   public void initialize() {
+  //     limit = Instant.now().plusSeconds(5);
+  //   }
 
-    @Override
-    public void execute() {
-      if (Instant.now().isAfter(limit)) {
-        ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
-      } else {
-        ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
-      }
-    }
+  //   @Override
+  //   public void execute() {
+  //     if (Instant.now().isAfter(limit)) {
+  //       ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+  //     } else {
+  //       ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
+  //     }
+  //   }
 
-    @Override
-    public boolean isFinished() {
-      return Instant.now().isAfter(limit);
-    }
+  //   @Override
+  //   public boolean isFinished() {
+  //     return Instant.now().isAfter(limit);
+  //   }
 
-    @Override
-    public void end(boolean interrupted) {
-      ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
-    }
-  }
+  //   @Override
+  //   public void end(boolean interrupted) {
+  //     ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+  //   }
+  // }
 }

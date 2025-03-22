@@ -55,14 +55,14 @@ public class ClimbSubsystem extends SubsystemBase{
 
     public Command climbUp() {
         return runEnd(
-            ()->climbMotor.set(0.2),
+            ()->climbMotor.set(0.5),
             ()->climbMotor.set(0)
         );
     }
 
     public Command climbDown() {
         return runEnd(
-            ()->climbMotor.set(-0.2),
+            ()->climbMotor.set(-0.5),
             ()->climbMotor.set(0)
         );
     }
