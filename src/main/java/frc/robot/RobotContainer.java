@@ -125,7 +125,8 @@ public class RobotContainer {
 
 
     operatorController.povDown().onTrue(lift.gotoGround());
-    operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    //operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    operatorController.povUp().whileTrue(lift.IntakeAngle());
     lift.setDefaultCommand(lift.move(leftY));
     operatorController.b().whileTrue(lift.descore());
 
