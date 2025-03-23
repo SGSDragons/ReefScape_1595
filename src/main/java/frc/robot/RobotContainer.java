@@ -36,11 +36,11 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
 
-  private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(6), Pose2d.kZero);
-  private final MotorizedLiftSubsystem lift = new MotorizedLiftSubsystem();
+  private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(8), Pose2d.kZero);
+  private final LiftSubsystem lift = new LiftSubsystem();
   private final ClimbSubsystem climb = new ClimbSubsystem();
   private final CoralIntakeSubsystemFake intake = new CoralIntakeSubsystemFake();
-  private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  private final CarriageSubsystemFake carriage = new CarriageSubsystemFake();
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -53,7 +53,7 @@ public class RobotContainer {
       SwerveSubsystem swerve = (SwerveSubsystem) drive;
       swerve.resetOdometry(Reefscape.getStart());
     }
-    NamedCommands.registerCommand("shelf", lift.gotoPosition(LiftSubsystem.Shelf, null));
+    NamedCommands.registerCommand("shelf", lift.gotoPositionWithStop(LiftSubsystem.Shelf));
     NamedCommands.registerCommand("shoot", carriage.spin());
   }
 
@@ -113,6 +113,10 @@ public class RobotContainer {
     // When holding the right trigger, disable right joystick and make robot always face the reef
     driverController.rightTrigger(0.0).whileTrue(drive.driveTargeting(driver::translateX, driver::translateY));
 
+    if (drive instanceof SwerveSubsystem) {
+      SwerveSubsystem swerve = (SwerveSubsystem)drive;
+      driverController.povDown().onTrue(swerve.runOnce(swerve::zeroGyroWithAlliance));
+    }
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
 
@@ -125,7 +129,7 @@ public class RobotContainer {
 
 
     operatorController.povDown().onTrue(lift.gotoGround());
-    //operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
     operatorController.povUp().whileTrue(lift.IntakeAngle());
     lift.setDefaultCommand(lift.move(leftY));
     operatorController.b().whileTrue(lift.descore());
@@ -174,9 +178,9 @@ public class RobotContainer {
 
 
     //operatorController.povUp().onTrue(carriage.spin());
-    operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
-    operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
-    carriage.setDefaultCommand(carriage.Middle(rightY));
+    //operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    //operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    //carriage.setDefaultCommand(carriage.Middle(rightY));
         // operatorController.leftBumper().onTrue(carriage.pointLeft());
     // operatorController.rightBumper().onTrue(carriage.pointRight());
 
@@ -201,8 +205,13 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-  // return new DriveForward();
-    return new PathPlannerAuto("middleauto1");
+  return new DriveForward();
+  //return new PathPlannerAuto("topauto1");
+
+// auto names:
+// middleauto1
+// topauto1
+
 
 //    Approach ideal;
 //    switch(DriverStation.getRawAllianceStation()) {
@@ -232,30 +241,30 @@ public Command getAutonomousCommand() {
 //    );
   }
 
-  // class DriveForward extends Command {
-  //   private Instant limit;
-  //   @Override
-  //   public void initialize() {
-  //     limit = Instant.now().plusSeconds(5);
-  //   }
+  class DriveForward extends Command {
+    private Instant limit;
+    @Override
+    public void initialize() {
+      limit = Instant.now().plusSeconds(5);
+    }
 
-  //   @Override
-  //   public void execute() {
-  //     if (Instant.now().isAfter(limit)) {
-  //       ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
-  //     } else {
-  //       ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
-  //     }
-  //   }
+    @Override
+    public void execute() {
+      if (Instant.now().isAfter(limit)) {
+        ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+      } else {
+        ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
+      }
+    }
 
-  //   @Override
-  //   public boolean isFinished() {
-  //     return Instant.now().isAfter(limit);
-  //   }
+    @Override
+    public boolean isFinished() {
+      return Instant.now().isAfter(limit);
+    }
 
-  //   @Override
-  //   public void end(boolean interrupted) {
-  //     ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
-  //   }
-  // }
+    @Override
+    public void end(boolean interrupted) {
+      ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
+    }
+  }
 }

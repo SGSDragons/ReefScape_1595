@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "TStoTRR"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "shelf"
@@ -13,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "approachmiddleB"
+            "pathName": "overtoTRR"
           }
         },
         {

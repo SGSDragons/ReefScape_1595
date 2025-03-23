@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +21,12 @@ public class CarriageSubsystemFake extends SubsystemBase{
     public Command pointRight() { return run(() -> {}); }
     
     public Command pointLeft() { return run(() -> {}); }
+
+    public Command shootLeft(DoubleSupplier speed) { return run(() -> {}); }
+
+    public Command shootRight(DoubleSupplier speed) { return run(() -> {}); }
+
+    public Command Middle(DoubleSupplier speed) { return run(() -> {}); }
 
     @Override
     public void periodic(){ telemetry(); }

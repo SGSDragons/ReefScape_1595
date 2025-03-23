@@ -17,12 +17,12 @@ public class LiftSubsystem extends SubsystemBase {
         String name;
 
         public LiftPosition(String name, double fallback) {
-            this.setPoint = preferences.get(name, fallback);
+            this.setPoint = Math.min(LiftConstants.TopLimit, preferences.get(name, fallback));
             this.name = name;
         }
 
         public void adjust(double shift) {
-            setPoint += shift;
+            setPoint = Math.min(LiftConstants.TopLimit, setPoint+shift);
             preferences.set(name, setPoint);
         }
     }
@@ -42,8 +42,14 @@ public class LiftSubsystem extends SubsystemBase {
     Command rotateDown() { return run(() -> {}); }
 
     Command rotateUp() { return run(() -> {}); }
+    
+    public Command gotoPositionWithStop(LiftPosition position) { return runOnce(() -> {}); }  
 
     public Command gotoPosition(LiftPosition position, DoubleSupplier axis) { return run(() -> {}); }
+
+    public Command descore() { return run(() -> {}); }
+
+    public Command IntakeAngle() { return run(() -> {}); }
 
     public Command gotoGround() { return run(() -> {}); }
 

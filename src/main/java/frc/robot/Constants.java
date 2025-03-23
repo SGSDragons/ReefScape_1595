@@ -94,7 +94,7 @@ public final class Constants {
       public static final double Medium = 38.86;
       public static final double High = 81;
 
-      public static final double TopLimit = 82;
+      public static final double TopLimit = 60 /* 82 */;
 
       public static final double TopAngle = 83;
       public static final double IntakeAngle = 40;

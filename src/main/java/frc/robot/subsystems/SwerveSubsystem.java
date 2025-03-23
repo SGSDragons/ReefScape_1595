@@ -285,6 +285,11 @@ public class SwerveSubsystem extends DriveSubsystem {
                 joystick = Translation2d.kZero;
             }
 
+            double heading = swerveDrive.getOdometryHeading().getDegrees();
+
+            heading = Math.round(heading) * 60;
+            
+
             Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
             Translation2d reef = Constants.Reefscape.getReefLocation();
             Translation2d direction = reef.minus(getPose().getTranslation());

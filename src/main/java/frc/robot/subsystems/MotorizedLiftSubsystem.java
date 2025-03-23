@@ -121,23 +121,90 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
         return run(() -> rotationMotor.set(1));
     }
 
-    @Override
-    public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
-        
-        return run(() -> {
+    public class GotoPosition extends Command {
+        final LiftPosition position;
+        final DoubleSupplier adjuster;
+        public GotoPosition(LiftPosition target, DoubleSupplier adjuster) {
+            this.position = target;
+            this.adjuster = adjuster;
+        }
 
-            position.adjust(0.1*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
-            
+        @Override
+        public void initialize() {
+            super.initialize();
+        }
+        @Override
+        public void execute() {
+            if (adjuster != null) {
+                position.adjust(0.2*MathUtil.applyDeadband(adjuster.getAsDouble(), 0.2));
+            }
+
             double error = motor.getPosition().getValueAsDouble() - position.setPoint;
 
             if (bottomReached.getAsBoolean() && error > 0.0) {
                 motor.set(0.0);
                 motor.setPosition(0.0);
+            } else if (motor.getPosition().getValueAsDouble() >= LiftConstants.TopLimit){
+                motor.set(0.0);
             } else if (0.2 < Math.abs(error)) {
                 // create a position closed-loop request, voltage output, slot 0 configs
                 // Apply some overshoot to settle clean
-                double compensation = Math.signum(error)*0.3;
-                PositionVoltage lift_request = new PositionVoltage(position.setPoint+compensation);
+                PositionVoltage lift_request = new PositionVoltage(position.setPoint);
+                motor.setControl(lift_request);
+            } else {
+                // Close enough
+                motor.stopMotor();
+            }
+
+
+            final double carriageAngle;
+            if (position == High) {
+                carriageAngle = topAngle;
+            } else if (position == Intake || position == Shelf) {
+                carriageAngle = intakeAngle;
+            } else {
+                carriageAngle = defaultAngle;
+            }
+            SmartDashboard.putNumber("target angle", carriageAngle);
+            rotationController.setReference(carriageAngle, ControlType.kPosition);
+        }
+        
+        @Override
+        public boolean isFinished() {
+            double error = motor.getPosition().getValueAsDouble() - position.setPoint;
+            return 0.2 < Math.abs(error) && adjuster != null;
+        }
+        @Override
+        public void end(boolean interrupted) {
+            motor.stopMotor();
+        }
+    }
+
+    @Override
+    public Command gotoPositionWithStop(LiftPosition position) {
+        return new GotoPosition(position, null);
+    }
+
+    @Override
+    public Command gotoPosition(LiftPosition position, DoubleSupplier axis) {
+        
+        return run(() -> {
+
+            if (axis != null) {
+                position.adjust(0.2*MathUtil.applyDeadband(axis.getAsDouble(), 0.2));
+            }
+
+            double error = motor.getPosition().getValueAsDouble() - position.setPoint;
+
+            if (bottomReached.getAsBoolean() && error > 0.0) {
+                motor.set(0.0);
+                motor.setPosition(0.0);
+            } else if (motor.getPosition().getValueAsDouble() >= LiftConstants.TopLimit){
+                motor.set(0.0);
+            } else if (0.2 < Math.abs(error)) {
+                // create a position closed-loop request, voltage output, slot 0 configs
+                // Apply some overshoot to settle clean
+                PositionVoltage lift_request = new PositionVoltage(position.setPoint);
                 motor.setControl(lift_request);
             } else {
                 // Close enough
@@ -199,6 +266,10 @@ public class MotorizedLiftSubsystem extends LiftSubsystem {
 
     public Command descore() {
         return run(() -> rotationController.setReference(descoreAngle, ControlType.kPosition));
+    }
+
+    public Command IntakeAngle(){
+        return run(() -> rotationController.setReference(intakeAngle, ControlType.kPosition));
     }
 
     @Override
