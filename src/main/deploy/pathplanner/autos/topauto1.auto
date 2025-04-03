@@ -7,31 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RedtoReefW"
+            "pathName": "TStoTRR"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shelf"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "ReefWtoDisSouth"
+            "pathName": "overtoTRR"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "DisSouthtoReefSW"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "ReefSWtoDisSouth"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DisSouthtoReefSE"
+            "name": "shoot"
           }
         }
       ]

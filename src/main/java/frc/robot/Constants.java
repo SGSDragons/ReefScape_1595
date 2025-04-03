@@ -53,7 +53,7 @@ public final class Constants {
       }
 
       public static final class Carriage {
-        public static final int WheelsMotorCanId = 21; // Wheels that transport a coral
+        public static final int WheelsMotorCanId = 21; // Wheels that transport a coral 21
         public static final int directionServoChannelId = 0; // The PWM port that the servo plugs into 
       }
 
@@ -89,18 +89,17 @@ public final class Constants {
 
       public static final double intakeheight = 27.63;
       public static final double Ground = 0;
-      public static final double Shelf = 16.6;
+      public static final double Shelf = 18.24;
       public static final double Low = 16.03;
       public static final double Medium = 38.86;
-      public static final double High = 60;
+      public static final double High = 81;
 
-      public static final double TopLimit = 77;
+      public static final double TopLimit = 60 /* 82 */;
 
-      public static final double TopAngle = 3;
+      public static final double TopAngle = 83;
+      public static final double IntakeAngle = 40;
       public static final double DefaultAngle = 0;
-      public static final double IntakeAngle = 1;
-
-      public static final double WiretoLiftRatio = 1;
+      public static final double DescoreAngle = 85;
 
     }
 
@@ -108,9 +107,16 @@ public final class Constants {
 
       public static final double outtakeSpeed = 0.5;
 
-      public static final double pointRight = 1;
-      public static final double middle = 0;
-      public static final double pointLeft = 0;
+      // Servo assignments for Axon programmer:
+      //   Angle: 80
+      //   Neutral: -65 (Depends on mounting)
+      //   Damping: 85
+      //   Overload Protection: 0.5s -> 50%
+      //                        2.0s -> 35%
+      //                        9.0s -> minimum
+      public static final double pointRight = 0.09;
+      public static final double middle = 0.54;
+      public static final double pointLeft = 1;
 
     }
 

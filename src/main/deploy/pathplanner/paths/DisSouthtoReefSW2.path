@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 11.913435274011947,
-        "y": 1.2586587344898883
+        "y": 1.258658734489888
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -53.58543386478003
+    "rotation": -53.585433864780036
   },
   "useDefaultConstraints": true
 }

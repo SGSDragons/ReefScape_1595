@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CoralIntakeConstants;
-import static frc.robot.Constants.HardwareID.CoralIntake.*; 
+import static frc.robot.Constants.HardwareID.CoralIntake.*;
+
+import java.util.function.DoubleSupplier; 
 
 public class CoralIntakeSubsystem extends SubsystemBase {
 
@@ -40,10 +42,11 @@ public class CoralIntakeSubsystem extends SubsystemBase {
     frontWheelsMotor.setNeutralMode(NeutralModeValue.Brake);
     sideWheelsMotor.setNeutralMode(NeutralModeValue.Brake);
 
-    reconfigurePid();
+    //reconfigurePid();
+    //reconfigureSetpoints();
   }
 
-  public void reconfigurePid() {
+  public void rereadPreferences() {
 
       final var config = new Slot0Configs();
       config.withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
@@ -52,48 +55,36 @@ public class CoralIntakeSubsystem extends SubsystemBase {
       config.kP = getPreference("proportional", CoralIntakeConstants.kP);
       config.kI = getPreference("integral", CoralIntakeConstants.kI);
       config.kD = getPreference("derivative", CoralIntakeConstants.kD);
-
       intakeRotationMotor.getConfigurator().apply(config);
+
+      Extend = getPreference("extend", CoralIntakeConstants.Extend);
+      Retract = getPreference("retract", CoralIntakeConstants.Retract);
+      Intake = getPreference("intake", CoralIntakeConstants.Intake);
+      Outtake = getPreference("outtake", CoralIntakeConstants.Outtake);
   }
 
   public Command Rotate(double position) {
 
     return run(() -> {
-
       final PositionVoltage rotation_request = new PositionVoltage(position).withSlot(0);
       intakeRotationMotor.setControl(rotation_request);
-
     });
   }
 
   public Command Extend() {
-
-    return run(() -> {
-
-      final PositionVoltage rotation_request = new PositionVoltage(Extend).withSlot(0);
-      intakeRotationMotor.setControl(rotation_request);
-
-    });
+    return run(() -> Rotate(Extend));
   }
 
   public Command Retract() {
+    return run(() -> Rotate(Retract));
+  }
+
+  public Command SpinIntake(DoubleSupplier speed) {  
 
     return run(() -> {
-
-      final PositionVoltage rotation_request = new PositionVoltage(Retract).withSlot(0);
-      intakeRotationMotor.setControl(rotation_request);
-
+      frontWheelsMotor.set(speed.getAsDouble());
+      sideWheelsMotor.set(speed.getAsDouble());
     });
-  }
-
-  public void Intake() {  
-    frontWheelsMotor.set(Intake);
-    sideWheelsMotor.set(Intake);
-  }
-
-  public void Outtake() {
-    frontWheelsMotor.set(Outtake);
-    sideWheelsMotor.set(Outtake);
   }
 
   @Override

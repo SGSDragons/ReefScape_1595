@@ -32,11 +32,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.Constants.Reefscape;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import swervelib.SwerveController;
@@ -48,7 +50,7 @@ import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
-public class SwerveSubsystem extends SubsystemBase {
+public class SwerveSubsystem extends DriveSubsystem {
 
     /**
      * Swerve drive object.
@@ -150,7 +152,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     // Boolean supplier that controls when the path will be mirrored for the red alliance
                     // This will flip the path being followed to the red side of the field.
                     // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-                    () -> false,
+                    () -> Reefscape.isRedAlliance(),
 
                     // Reference to this subsystem to set requirements
                     this
@@ -219,14 +221,21 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param headingY     Heading Y to calculate angle of the joystick.
      * @return Drive command.
      */
-    public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX, DoubleSupplier headingY) {
+    @Override
+    public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX, DoubleSupplier headingY, double scale) {
         swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
 
             Translation2d joystick = new Translation2d(translationX.getAsDouble(), translationY.getAsDouble());
+            double magnitude = joystick.getNorm();
+          
             if (joystick.getNorm() < 0.1) {
                 joystick = Translation2d.kZero;
             }
+
+
+            magnitude = scale*Math.pow(magnitude, 3);
+            joystick = joystick.times(magnitude);
 
             Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
 
@@ -241,6 +250,7 @@ public class SwerveSubsystem extends SubsystemBase {
         });
     }
 
+    @Override
     public Command driveRelative(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier angularRotationX)
     {
       return run(() -> {
@@ -262,9 +272,9 @@ public class SwerveSubsystem extends SubsystemBase {
      *
      * @param translationX Translation in the X direction. Cubed for smoother controls.
      * @param translationY Translation in the Y direction. Cubed for smoother controls.
-     * @param target       A targets position on the field. The robots heading will change to follow this target.
      * @return Drive command.
      */
+    @Override
     public Command  driveTargeting(DoubleSupplier translationX, DoubleSupplier translationY) {
         swerveDrive.setHeadingCorrection(true); // Normally you would want heading correction for this kind of control.
         return run(() -> {
@@ -274,6 +284,11 @@ public class SwerveSubsystem extends SubsystemBase {
             if (joystick.getNorm() < 0.1) {
                 joystick = Translation2d.kZero;
             }
+
+            double heading = swerveDrive.getOdometryHeading().getDegrees();
+
+            heading = Math.round(heading) * 60;
+            
 
             Translation2d scaledInputs = SwerveMath.scaleTranslation(joystick, 0.8);
             Translation2d reef = Constants.Reefscape.getReefLocation();

@@ -8,19 +8,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import frc.robot.ApproachFactory.Approach;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.Reefscape;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,16 +33,14 @@ import frc.robot.commands.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  //private final DrivetrainSubsystem drivetrain;
-  private final SwerveSubsystem swerve = new SwerveSubsystem(Units.MetersPerSecond.of(3), Pose2d.kZero);
   private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
   private final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.operatorControllerPort);
-  private final ApproachFactory approaches;
 
+  private final DriveSubsystem drive = new SwerveSubsystem(Units.MetersPerSecond.of(8), Pose2d.kZero);
   private final LiftSubsystem lift = new LiftSubsystem();
-  //private final ClimbSubsystem climb = new ClimbSubsystem();
-  //private final CoralIntakeSubsystem intake = new CoralIntakeSubsystem();
-  // private final CarriageSubsystem carriage = new CarriageSubsystem(lift);
+  private final ClimbSubsystem climb = new ClimbSubsystem();
+  private final CoralIntakeSubsystemFake intake = new CoralIntakeSubsystemFake();
+  private final CarriageSubsystemFake carriage = new CarriageSubsystemFake();
   private final AlgaeSubsystem algae = new AlgaeSubsystem();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -54,8 +49,12 @@ public class RobotContainer {
       DriverStation.refreshData();
     }
 
-    swerve.resetOdometry(Reefscape.getStart());
-    approaches = new ApproachFactory(Reefscape.getReefLocation());
+    if (drive instanceof SwerveSubsystem) {
+      SwerveSubsystem swerve = (SwerveSubsystem) drive;
+      swerve.resetOdometry(Reefscape.getStart());
+    }
+    NamedCommands.registerCommand("shelf", lift.gotoPositionWithStop(LiftSubsystem.Shelf));
+    NamedCommands.registerCommand("shoot", carriage.spin());
   }
 
   //      ______________________________(17, 8)
@@ -75,7 +74,7 @@ public class RobotContainer {
   // Thus, Blue axis are inverted.
 
   class DriverSticks {
-    private final double inverter = -1.0;
+    private final double inverter = Reefscape.isRedAlliance() ? 1.0 : -1.0;
     double readAxis(XboxController.Axis axis) {
       return driverController.getRawAxis(axis.value);
     }
@@ -92,42 +91,61 @@ public class RobotContainer {
     DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
-    DoubleSupplier lefttrigger = () -> operatorController.getRawAxis(Axis.kLeftTrigger.value);
+    DoubleSupplier rightY = () -> operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier lefttrigger = () -> -operatorController.getRawAxis(Axis.kLeftTrigger.value);
     DoubleSupplier righttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
+    driverController.a().whileTrue(climb.climbUp());
+    driverController.y().whileTrue(climb.climbDown());
+    
     // Drive relative to the field by default.
     // Left joystick up is away from the driver station. Left joystick left moves left on the field
     // Right joystick up looks away from the driver station. Right joystick left looks left on the field
-    swerve.setDefaultCommand(swerve.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY));
+    drive.setDefaultCommand(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY, 1.0));
+    driverController.leftTrigger(0.5).whileTrue(drive.driveCommand(driver::translateX, driver::translateY, driver::lookX, driver::lookY, 0.2));
 
     // When holding the right bumper, change joysticks to drive relative to the Robot (left y is "forward", right x turns left/right)
-    driverController.rightBumper().whileTrue(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
+    driverController.rightBumper().whileTrue(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
 
     // When holding the right trigger, disable right joystick and make robot always face the reef
-    driverController.rightTrigger(0.0).whileTrue(swerve.driveTargeting(driver::translateX, driver::translateY));
-    driverController.a().whileTrue(new DynamicReefApproach(swerve, approaches));
+    driverController.rightTrigger(0.0).whileTrue(drive.driveTargeting(driver::translateX, driver::translateY));
+
+    if (drive instanceof SwerveSubsystem) {
+      SwerveSubsystem swerve = (SwerveSubsystem)drive;
+      driverController.povDown().onTrue(swerve.runOnce(swerve::zeroGyroWithAlliance));
+    }
     //driverController.povUp().onTrue(new Climb(climb, intake, driverController));
 
-    // Lower the lift to its ground position whenever the operator is pushing the lift to another target
-    lift.setDefaultCommand(lift.gotoGround());
 
     // Going to other positions requires holding a button. The joystick can be used
     // to make slow adjustments to the target position. These adjustments are permanent.
-    operatorController.y().whileTrue(lift.gotoPosition(lift.High, leftY));
-    operatorController.x().whileTrue(lift.gotoPosition(lift.Medium, leftY));
-    operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    operatorController.b().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
+    operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
+    operatorController.x().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    //operatorController.b().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.y().onTrue(lift.gotoPosition(LiftSubsystem.Medium, leftY));
 
-    operatorController.leftBumper().onTrue(algae.Extend(rightY));
-    operatorController.rightBumper().onTrue(algae.Retract(rightY));
 
-    algae.setDefaultCommand(algae.Roller(rightY));
-    // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
-    // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
+    operatorController.povDown().onTrue(lift.gotoGround());
+    operatorController.povUp().onTrue(lift.gotoPosition(LiftSubsystem.Intake, leftY));
+    operatorController.povUp().whileTrue(lift.IntakeAngle());
+    lift.setDefaultCommand(lift.move(leftY));
+    operatorController.b().whileTrue(lift.descore());
+
+
+    operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    carriage.setDefaultCommand(carriage.Middle(rightY));
+
+    operatorController.povRight().onTrue(algae.Extend(righttrigger));
+    operatorController.povLeft().onTrue(algae.Retract(lefttrigger));
+    algae.setDefaultCommand(algae.Roller(righttrigger,lefttrigger));
+    //algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
+    //operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
+    //operatorController.rightTrigger().onTrue(algae.Roller(lefttrigger));
   }
 
   // Controller behaviors when running in test mode. These are meant for
@@ -136,40 +154,49 @@ public class RobotContainer {
     DriverSticks driver = new DriverSticks();
 
     DoubleSupplier leftY = () -> -operatorController.getRawAxis(Axis.kLeftY.value);
-    DoubleSupplier rightY = () -> -operatorController.getRawAxis(Axis.kRightY.value);
+    DoubleSupplier rightY = () -> operatorController.getRawAxis(Axis.kRightY.value);
     DoubleSupplier lefttrigger = () -> operatorController.getRawAxis(Axis.kLeftTrigger.value);
     DoubleSupplier righttrigger = () -> -operatorController.getRawAxis(Axis.kRightTrigger.value);
 
+    
     // Clear any bound triggers and create new bindings
     CommandScheduler.getInstance().getActiveButtonLoop().clear();
 
-    swerve.setDefaultCommand(swerve.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
-    swerve.setMotorBrake(false);
+    //Drive
 
-    //lift.setDefaultCommand(lift.move(leftY));
-    //climb.setDefaultCommand(climb.drive(rightY));
-    //algae.setDefaultCommand(algae.rotate(rightY));
-    //algae.setDefaultCommand(algae.spin(rightY));
+    drive.setDefaultCommand(drive.driveRelative(driver::translateX, driver::translateY, () -> -driver.readAxis(Axis.kRightX)));
+
+  //climb.setDefaultCommand(climb.drive(rightY));
+
+    lift.setDefaultCommand(lift.move(leftY));
 
     //Reread Lift PID constants from preferences
+    // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-    // operatorController.a().whileTrue(lift.gotoPosition(lift.Low, leftY));
-    // operatorController.x().whileTrue(lift.gotoPosition(lift.Shelf, leftY));
-    operatorController.leftBumper().onTrue(algae.Extend(rightY));
-    operatorController.rightBumper().onTrue(algae.Retract(rightY));
+    operatorController.a().onTrue(lift.gotoPosition(LiftSubsystem.Low, leftY));
+    operatorController.x().onTrue(lift.gotoPosition(LiftSubsystem.Shelf, leftY));
 
-    algae.setDefaultCommand(algae.Roller(rightY));
+
+    //operatorController.povUp().onTrue(carriage.spin());
+    //operatorController.leftBumper().whileTrue(carriage.shootLeft(rightY));
+    //operatorController.rightBumper().whileTrue(carriage.shootRight(rightY));
+    //carriage.setDefaultCommand(carriage.Middle(rightY));
+        // operatorController.leftBumper().onTrue(carriage.pointLeft());
+    // operatorController.rightBumper().onTrue(carriage.pointRight());
+
+    operatorController.povRight().onTrue(algae.Extend(righttrigger));
+    operatorController.povLeft().onTrue(algae.Retract(lefttrigger));
+    algae.setDefaultCommand(algae.Roller(righttrigger,lefttrigger));
+
+    //algae.setDefaultCommand(algae.Roller(rightY));
     // operatorController.leftTrigger().onTrue(algae.Roller(righttrigger));
     // operatorController.rightBumper().onTrue(algae.Roller(lefttrigger));
 
-    operatorController.y().onTrue(algae.runOnce(algae::reconfigurePid));
+    operatorController.y().onTrue(lift.runOnce(lift::rereadPreferences ));
     // operatorController.y().onTrue(lift.runOnce(lift::reconfigurePid));
 
-
-    // carriage.setDefaultCommand(carriage.middle());
-    // operatorController.leftBumper().whileTrue(carriage.shootLeft());
-    // operatorController.rightBumper().whileTrue(carriage.shootRight());
-    // Bumper's are doing 2 separate actions, >>fix<<
+    //algae.setDefaultCommand(algae.rotate(rightY));
+    //algae.setDefaultCommand(algae.spin(rightY));
   }
 
   /**
@@ -178,7 +205,13 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
 public Command getAutonomousCommand() {
-    return new DriveForward();
+  return new DriveForward();
+  //return new PathPlannerAuto("topauto1");
+
+// auto names:
+// middleauto1
+// topauto1
+
 
 //    Approach ideal;
 //    switch(DriverStation.getRawAllianceStation()) {
@@ -218,9 +251,9 @@ public Command getAutonomousCommand() {
     @Override
     public void execute() {
       if (Instant.now().isAfter(limit)) {
-        swerve.drive(Translation2d.kZero, 0.0, false);
+        ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
       } else {
-        swerve.drive(new Translation2d(0.2, 0.0), 0.0, false);
+        ((SwerveSubsystem)drive).drive(new Translation2d(0.2, 0.0), 0.0, false);
       }
     }
 
@@ -231,7 +264,7 @@ public Command getAutonomousCommand() {
 
     @Override
     public void end(boolean interrupted) {
-      swerve.drive(Translation2d.kZero, 0.0, false);
+      ((SwerveSubsystem)drive).drive(Translation2d.kZero, 0.0, false);
     }
   }
 }

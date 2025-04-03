@@ -10,6 +10,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -27,6 +28,7 @@ public class AlgaeSubsystem extends SubsystemBase {
 
   TalonFX FourBarMotor;
   SparkMax Roller;
+  RelativeEncoder RollerEncoder;
 
   public double Extend = getPreference("extend", AlgaeContants.Extend);
   public double Retract = getPreference("retract", AlgaeContants.Retract);
@@ -38,6 +40,7 @@ public class AlgaeSubsystem extends SubsystemBase {
     FourBarMotor.setPosition(0.0);
 
     Roller = new SparkMax(RollerCanId, MotorType.kBrushless);
+    RollerEncoder = Roller.getEncoder();
 
     reconfigurePid();
   }
@@ -61,27 +64,8 @@ public class AlgaeSubsystem extends SubsystemBase {
     });
   }
 
-  public void spinRoller(DoubleSupplier speed){
-    Roller.set(speed.getAsDouble()/2);
-  }
-
-  public Command Roller(DoubleSupplier speed){
-    return run(() -> spinRoller(speed));
-  }
-
-  public void stop() {
-    // var talonFXConfigurator = FourBarMotor.getConfigurator();
-    // var limitConfigs = new CurrentLimitsConfigs();
-
-    // FourBarMotor.getSupplyVoltage();
-    // FourBarMotor.getMotorVoltage();
-
-    // // enable stator current limit
-    // //limitConfigs.StatorCurrentLimit = getPreference("currentlimit", AlgaeContants.CurrentLimit);
-    // limitConfigs.StatorCurrentLimit = AlgaeContants.CurrentLimit;
-    // limitConfigs.StatorCurrentLimitEnable = true;
-
-    // talonFXConfigurator.apply(limitConfigs);
+  public Command Roller(DoubleSupplier intake, DoubleSupplier outake){
+    return run(() -> Roller.set((intake.getAsDouble() - outake.getAsDouble())/2));
   }
 
   private Command setArmPosition(final double target, DoubleSupplier speed) {
@@ -92,7 +76,7 @@ public class AlgaeSubsystem extends SubsystemBase {
     final PositionVoltage request = new PositionVoltage(target).withSlot(0);
     return new FunctionalCommand(
       () -> {FourBarMotor.setControl(request);}, 
-      () -> {spinRoller(speed);},
+      () -> {Roller.set(speed.getAsDouble());},
       (interrupted) -> {FourBarMotor.set(0.0);},
       () -> 0.2 >  Math.abs(FourBarMotor.getPosition().getValueAsDouble() - target),
       this
@@ -113,9 +97,10 @@ public class AlgaeSubsystem extends SubsystemBase {
   }
 
   public void telemetry() {
-      SmartDashboard.putNumber("Algae Motor Velocity", FourBarMotor.getVelocity().getValueAsDouble());
-      SmartDashboard.putNumber("Algae Motor Position", FourBarMotor.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber("Algae Motor Voltage", FourBarMotor.getMotorVoltage().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Velocity", FourBarMotor.getVelocity().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Position", FourBarMotor.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("FourBar Motor Voltage", FourBarMotor.getMotorVoltage().getValueAsDouble());
+      SmartDashboard.putNumber("Roller Velocity", RollerEncoder.getVelocity());
   }
 
   public double getPreference(String key, double fallback) {

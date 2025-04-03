@@ -53,53 +53,18 @@ public class ClimbSubsystem extends SubsystemBase{
         
     }
 
-    public void activate() {
-        final double targetPosition;
-        if (hasExtended == false) {
-            targetPosition = extendedPosition;
-        } else {
-            targetPosition = retractedPosition;
-        }
-
-        PositionVoltage target = new PositionVoltage(targetPosition);
-        climbMotor.setControl(target);
+    public Command climbUp() {
+        return runEnd(
+            ()->climbMotor.set(0.5),
+            ()->climbMotor.set(0)
+        );
     }
 
-    public Command climbStop() {
-        return run(() -> climbMotor.set(0.0));
-    }
-
-    public void climbUp() {
-        final PositionVoltage position = new PositionVoltage(0).withSlot(0);
-        climbMotor.setControl(position);
-    }
-
-    public void climbDown() {
-        final PositionVoltage position = new PositionVoltage(0).withSlot(0);
-        climbMotor.setControl(position);
-    }
-
-    public boolean hasExtended() {
-        return hasExtended;
-    }
-
-    public Command drive(DoubleSupplier speedSupplier) {
-        return run(() -> {
-            double speed = speedSupplier.getAsDouble();
-            if (Math.abs(speed) < 0.1) {
-                speed = 0.0;
-            }
-
-            climbMotor.set(speed);
-            // climbMotor.setControl(new VelocityVoltage(speed));
-        });
-    }
-    public Command reconfigure() {
-        return runOnce(() -> {
-            var config = new Slot0Configs();
-            config.kP = getPreference("     ", 0.0);
-            climbMotor.getConfigurator().apply(config);
-        });
+    public Command climbDown() {
+        return runEnd(
+            ()->climbMotor.set(-0.5),
+            ()->climbMotor.set(0)
+        );
     }
 
     @Override
